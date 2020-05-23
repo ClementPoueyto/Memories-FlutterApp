@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "691021316143",
+    "firebase_url": "https://memories-2721a.firebaseio.com",
+    "project_id": "memories-2721a",
+    "storage_bucket": "memories-2721a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691021316143:android:fab37f4b4c8501c24f86da",
+        "android_client_info": {
+          "package_name": "com.mencelt.memories"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "691021316143-mpc9tqvjbrvdgivgld8ao4nds24sf43k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeLNI2zV97lUOCFtjAnZRtbN8LsouM_zA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "691021316143-mpc9tqvjbrvdgivgld8ao4nds24sf43k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
