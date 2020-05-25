@@ -13,24 +13,21 @@ class Post{
   String description;
   String userId;
   String imageUrl;
-  int date;
+  DateTime date;
   Position position;
   List<dynamic> tags;
   List<dynamic> likes;
   List<dynamic> comments;
-  User user;
 
-  Post(User user, DocumentSnapshot snapshot){
+  Post(DocumentSnapshot snapshot){
     ref = snapshot.reference;
     documentId = snapshot.documentID;
-    user = user;
     Map<String, dynamic> map = snapshot.data;
     title = map[keyTitle];
     description = map[keyDescription];
-    userId = map[keyUid];
     imageUrl = map[keyImageURL];
-    date = map[keyDate];
-    position = map[keyPosition];
+    date = map[keyDate].toDate();
+    position = Position(latitude: map[keyPosition][0], longitude: map[keyPosition][1]);
     likes = map[keyLikes];
     comments = map[keyComments];
     id= map[keyPostId];
@@ -40,7 +37,6 @@ class Post{
   Map<String,dynamic> toMap(){
     Map<String, dynamic> map = {
       keyPostId:id,
-      keyUid:userId,
       keyDate:date,
       keyLikes:likes,
       keyComments:comments,

@@ -84,7 +84,6 @@ class _AddPostState extends State<AddPost> {
                           icon: Icon(Icons.photo_camera),
                           function: () {
                             takePicture(ImageSource.gallery);
-                            print("test");
                           },
                         )),
                   ),
@@ -170,9 +169,9 @@ class _AddPostState extends State<AddPost> {
   }
 
   Future<void> takePicture(ImageSource source) async {
-    var status = await Permission.photos.request();
+    await Permission.photos.request();
     File image = await ImagePicker.pickImage(
-        source: source, maxHeight: 500.0, maxWidth: 500.0);
+        source: source, maxHeight: 500.0, maxWidth: 500.0, imageQuality: 10);
     setState(() {
       imageTaken = image;
     });
@@ -185,23 +184,26 @@ class _AddPostState extends State<AddPost> {
         target: LatLng(30, 30),
         zoom: 12,
       ),
-      trackCameraPosition: true,
+      trackCameraPosition: false,
       rotateGesturesEnabled: false,
       scrollGesturesEnabled: false,
       compassEnabled: false,
-      myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
+      myLocationTrackingMode: MyLocationTrackingMode.None,
       tiltGesturesEnabled: false,
       zoomGesturesEnabled: false,
-      myLocationEnabled: true,
+      myLocationEnabled: false,
+
     );
   }
 
   void onMapCreated(MapboxMapController controller) async {
     _userPosition = await MapHelper().getPosition();
     mapController = controller;
+    mapController.moveCamera(CameraUpdate.newLatLng(LatLng(_userPosition.latitude,_userPosition.longitude)));
     mapController.addListener(_onMapChanged);
     setState(() {});
   }
+
 
   void _onMapChanged() {
     setState(() {});

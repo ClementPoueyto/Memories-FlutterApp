@@ -35,3 +35,24 @@ Icon notificationIcon = Icon(Icons.notifications);
 Icon searchIcon = Icon(Icons.search);
 Icon burger = Icon(Icons.dehaze);
 Icon place = Icon(Icons.place);
+Icon postIcon = Icon(Icons.portrait);
+Icon tagIcon = Icon(Icons.local_offer);
+Icon settingsIcon = Icon(Icons.settings);
+//enum
+
+enum Months {
+  january,
+  february,
+  march,
+  april,
+  may,
+  june,
+  july,
+  august,
+  september,
+  october,
+  november,
+  december
+}
+
+

@@ -14,7 +14,6 @@ class User {
   String documentId;
 
   User(DocumentSnapshot snapshot){
-    print(snapshot.data);
     ref= snapshot.reference;
     documentId = snapshot.documentID;
     Map<String, dynamic> map = snapshot.data;

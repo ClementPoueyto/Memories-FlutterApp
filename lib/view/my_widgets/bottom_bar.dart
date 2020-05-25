@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 
 class BottomBar extends BottomAppBar {
 
-  BottomBar({@required List<Widget> items}) : super(
-    shape: CircularNotchedRectangle(),
+  BottomBar({@required List<Widget> items, bool shapeCircular : false}) : super(
+    shape: shapeCircular?CircularNotchedRectangle():null,
     color : Colors.red,
     child : Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,

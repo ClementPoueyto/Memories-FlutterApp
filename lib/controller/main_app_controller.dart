@@ -27,7 +27,6 @@ class _MainState extends State<MainAppController>{
     streamListener = FireHelper().fire_user.document(widget.uid).snapshots().listen((document) {
       setState(() {
         me= User(document);
-        print(me.lastName);
       });
     });
   }
@@ -47,7 +46,8 @@ class _MainState extends State<MainAppController>{
             BarItem(icon : searchIcon, onPressed: (()=> buttonSelected(1)), selected: index==1,),
             SizedBox(),
             BarItem(icon : profileIcon, onPressed: (()=> buttonSelected(2)), selected: index==2,),
-            BarItem(icon : notificationIcon, onPressed: (()=> buttonSelected(3)), selected: index==3,)]
+            BarItem(icon : notificationIcon, onPressed: (()=> buttonSelected(3)), selected: index==3,)],
+          shapeCircular: true,
         ),
         body : showPage(),
         backgroundColor: Colors.grey,
@@ -64,14 +64,13 @@ class _MainState extends State<MainAppController>{
     setState(() {
       this.index=index;
     });
-    print(index);
   }
 
   Widget showPage(){
     switch(index){
       case 0 : return FeedPage();
       case 1 : return SearchPage();
-      case 2 : return ProfilePage();
+      case 2 : return ProfilePage(me);
       case 3 : return NotificationPage();
 
     }

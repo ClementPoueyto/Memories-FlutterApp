@@ -10,3 +10,4 @@ export 'my_widgets/bottom_bar.dart';
 export 'my_widgets/bar_items.dart';
 export 'my_widgets/my_icon_button.dart';
 export 'my_widgets/my_map.dart';
+export 'my_widgets/profile_image.dart';

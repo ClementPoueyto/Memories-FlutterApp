@@ -20,7 +20,6 @@ class FireHelper{
     final FirebaseUser user = result.user;
     String id = user.uid;
     List<dynamic> followers=[];
-    List<dynamic> posts =[];
     List<dynamic> following=[id];
 
     Map<String,dynamic> map={
@@ -30,7 +29,6 @@ class FireHelper{
       keyImageURL:"",
       keyFollowers:followers,
       keyFollowing : following,
-      keyPost : posts,
     };
     addUser(id, map);
     return user;
@@ -41,16 +39,20 @@ class FireHelper{
   static final data_instance = Firestore.instance;
   final fire_user = data_instance.collection("users");
 
+  Stream<QuerySnapshot> postsFrom(String uid) => fire_user.document(uid).collection("posts").snapshots();
+
   addUser(String id, Map<String, dynamic> map){
     fire_user.document(id).setData(map);
   }
 
   addpost(String uid, String  title, String description, Position position, File file){
-    int date =  DateTime.now().millisecondsSinceEpoch.toInt();
+    DateTime date =  DateTime.now();
+
     List<dynamic> likes = [];
     List<dynamic> comments = [];
     Map<String, dynamic> map = {
       keyUid : uid,
+      keyTitle : title,
       keyLikes : likes,
       keyComments : comments,
       keyDate : date,
