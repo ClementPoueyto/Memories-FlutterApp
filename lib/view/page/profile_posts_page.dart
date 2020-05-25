@@ -41,10 +41,6 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
     if (controller != null) {
       controller.dispose();
     }
-    print(widget.listPosts.toString());
-
-    widget.listPosts.forEach((key, value) {
-    });
     super.dispose();
   }
 

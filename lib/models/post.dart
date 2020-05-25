@@ -46,7 +46,7 @@ class Post{
       map[keyDescription] = description;
     }
     if(position != null){
-      map[keyPosition]= [position.altitude,position.longitude];
+      map[keyPosition]= [position.latitude,position.longitude];
     }
     if(imageUrl!=null){
       map[keyImageURL] = imageUrl;

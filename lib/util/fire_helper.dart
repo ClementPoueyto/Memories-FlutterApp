@@ -47,7 +47,6 @@ class FireHelper{
 
   addpost(String uid, String  title, String description, Position position, File file){
     DateTime date =  DateTime.now();
-
     List<dynamic> likes = [];
     List<dynamic> comments = [];
     Map<String, dynamic> map = {
@@ -61,7 +60,7 @@ class FireHelper{
       map[keyDescription] = description;
     }
     if(position!=null&&position!=""){
-      map[keyPosition] = [position.altitude,position.longitude];
+      map[keyPosition] = [position.latitude,position.longitude];
     }
     if(file!=null) {
       print(uid);

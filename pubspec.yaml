@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   firebase_core: ^0.4.0+9
-  mapbox_gl: ^0.0.5
+  flutter_map: ^0.9.0
   image_picker: ^0.6.6+4
   geolocator: ^5.3.1
   permission_handler: ^5.0.0+hotfix.6

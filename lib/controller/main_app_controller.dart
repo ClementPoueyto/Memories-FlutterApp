@@ -8,7 +8,6 @@ import 'package:memories/view/page/feed_page.dart';
 import 'package:memories/view/page/notification_page.dart';
 import 'package:memories/view/page/profile_page.dart';
 import 'package:memories/view/page/search_page.dart';
-import 'package:memories/view/page/add_post.dart';
 
 class MainAppController extends StatefulWidget{
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:memories/models/user.dart';
 //ME
 User me;
@@ -55,4 +56,7 @@ enum Months {
   december
 }
 
+//Position
+
+Position initializedPosition = Position(latitude: 0,longitude: 0);
 

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/util/map_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -18,23 +17,25 @@ class AddPost extends StatefulWidget {
 class _AddPostState extends State<AddPost> {
   TextEditingController _title;
   TextEditingController _description;
-  Position _userPosition;
+  Future<Position> _userPosition;
   File imageTaken;
-  MapboxMapController mapController;
 
   @override
   void initState() {
     super.initState();
     _title = TextEditingController();
     _description = TextEditingController();
+    _userPosition = MapHelper().getPosition();
+    _userPosition.then((value) =>{
+    initializedPosition=value,
+  });
   }
+
 
   @override
   void dispose() {
     super.dispose();
-    if (mapController != null) {
-      mapController.removeListener(_onMapChanged);
-    }
+
     _title.dispose();
     _description.dispose();
   }
@@ -123,7 +124,7 @@ class _AddPostState extends State<AddPost> {
                 child: Stack(
                   alignment: AlignmentDirectional.centerEnd,
                   children: <Widget>[
-                    _buildMapBox(context),
+                    MyMap(_userPosition,initializedPosition,[]),
                     Positioned(
 
                         child: PaddingWith(right : 15,widget : Container(
@@ -177,42 +178,15 @@ class _AddPostState extends State<AddPost> {
     });
   }
 
-  MapboxMap _buildMapBox(BuildContext context) {
-    return MapboxMap(
-      onMapCreated: onMapCreated,
-      initialCameraPosition: CameraPosition(
-        target: LatLng(30, 30),
-        zoom: 12,
-      ),
-      trackCameraPosition: false,
-      rotateGesturesEnabled: false,
-      scrollGesturesEnabled: false,
-      compassEnabled: false,
-      myLocationTrackingMode: MyLocationTrackingMode.None,
-      tiltGesturesEnabled: false,
-      zoomGesturesEnabled: false,
-      myLocationEnabled: false,
-
-    );
-  }
-
-  void onMapCreated(MapboxMapController controller) async {
-    _userPosition = await MapHelper().getPosition();
-    mapController = controller;
-    mapController.moveCamera(CameraUpdate.newLatLng(LatLng(_userPosition.latitude,_userPosition.longitude)));
-    mapController.addListener(_onMapChanged);
-    setState(() {});
-  }
 
 
-  void _onMapChanged() {
-    setState(() {});
-  }
   sendToFirebase(){
     hideKeyBoard();
     if(imageTaken != null && _title.text!=null &&_title.text!=""){
       Navigator.pop(context);
-      FireHelper().addpost(me.uid, _title.text, _description.text, _userPosition, imageTaken);
+      _userPosition.then((value) =>
+          FireHelper().addpost(me.uid, _title.text, _description.text, value, imageTaken)
+      );
     }
   }
 }
