@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,7 @@ import 'package:memories/view/my_material.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/view/my_widgets/loadingCenter.dart';
 import 'package:memories/delegate/header_delegate.dart';
-import 'package:memories/view/tiles/post_tile.dart';
+import 'package:memories/view/tiles/profile_post_tile.dart';
 
 class ProfilePostsPage extends StatefulWidget {
   final bool isme;
@@ -28,12 +30,11 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
         controller.offset > _expanded - kToolbarHeight;
   }
 
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     controller = ScrollController();
-    print("check docs : "+widget.documents.length.toString());
   }
 
   @override
@@ -48,18 +49,22 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
   Widget build(BuildContext context) {
     return CustomScrollView(
               controller: controller,
-              slivers: list(widget.documents)
+              slivers: list()
             );
 
   }
 
-  List<Widget> list(List<DocumentSnapshot> documents){
+  List<Widget> list(){
     List<Widget> list = List();
     list.add(SliverAppBar(
+      leading: new Container(),
       expandedHeight: _expanded,
       actions: <Widget>[
         (widget.isme)?
-        MyIconButton(icon: settingsIcon, color: Colors.red, function: (){FireHelper().logOut();}):Text("demande ami")
+        MyIconButton(icon: editIcon, color: Colors.red, function: (){FireHelper().logOut();}):MyButton(color: me.following.contains(widget.user.uid)?
+        Colors.red:Colors.white,name :me.following.contains(widget.user.uid)?"Se désabonner":
+        "Suivre",function: (){
+          FireHelper().addFollow(widget.user);},)
       ],
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
@@ -109,13 +114,14 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
           ),
           delegate: SliverChildListDelegate([
             for(Post post in widget.listPosts[element])
-              PostTile(post: post, user: widget.user)
+              ProfilePostTile(post: post, user: widget.user)
           ])),);
-    }});
+    }
+
+    });
 
     return list;
   }
-
 
 
 }

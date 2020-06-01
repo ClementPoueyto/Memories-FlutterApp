@@ -5,10 +5,15 @@ import 'package:memories/models/user.dart';
 User me;
 //colors
 const Color white = const Color(0xFFFFFFFF);
-const Color base = const Color(0xFFFFFFFF);
-const Color primary = const Color(0xFFFFFFFF);
-const Color secondary = const Color(0xFFFFFFFF);
+const Color whiteShadow = const Color(0xFFF5F5F5);
+const Color black = Colors.black;
+const Color base = Colors.green;
+const Color accent = const Color(0xFF00C853);
 
+//Value
+
+const double maxWidthImagePost= 1080.0;
+const double maxHeightImagePost=1350.0;
 
 //keys
 String keyFirstName = "firstName";
@@ -25,8 +30,13 @@ String keyDate = "date";
 String keyLikes = "likes";
 String keyComments = "comments";
 String keyPosition = "position";
-
-
+String keyIsPrivate= "isPrivate";
+String keyAdress="adress";
+String keyTextComment ="textComment";
+String keyTextNotification = "textNotification";
+String keyType ="type";
+String keyRef = "ref";
+String keySeen = "seen";
 //Icons
 
 Icon homeIcon = Icon(Icons.home);
@@ -39,6 +49,13 @@ Icon place = Icon(Icons.place);
 Icon postIcon = Icon(Icons.portrait);
 Icon tagIcon = Icon(Icons.local_offer);
 Icon settingsIcon = Icon(Icons.settings);
+Icon closeIcon= Icon(Icons.close);
+Icon likeIconFull =Icon(Icons.favorite);
+Icon likeIcon =Icon(Icons.favorite_border);
+Icon sendIcon = Icon(Icons.send);
+Icon commentsIcon=Icon(Icons.comment);
+Icon editIcon=Icon(Icons.mode_edit);
+
 //enum
 
 enum Months {

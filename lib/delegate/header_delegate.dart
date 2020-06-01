@@ -12,6 +12,7 @@ class MyHeader extends SliverPersistentHeaderDelegate{
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
+      height: 100,
       margin :EdgeInsets.only(bottom: 5.0),
       padding: EdgeInsets.all(10.0),
       color:Colors.red ,

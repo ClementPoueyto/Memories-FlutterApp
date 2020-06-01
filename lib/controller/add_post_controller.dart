@@ -2,6 +2,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/plugin_api.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:memories/controller/map_controller.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/util/map_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -9,16 +12,22 @@ import 'package:memories/models/user.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:latlong/latlong.dart';
 
 class AddPost extends StatefulWidget {
   _AddPostState createState() => _AddPostState();
 }
 
 class _AddPostState extends State<AddPost> {
+  MapController mapController = MapController();
   TextEditingController _title;
   TextEditingController _description;
   Future<Position> _userPosition;
+  Position positionToSend;
+  String adressToSend;
   File imageTaken;
+  List<Marker> markersList = [];
+  Future<List<Placemark>> adressPlacemark;
 
   @override
   void initState() {
@@ -26,11 +35,20 @@ class _AddPostState extends State<AddPost> {
     _title = TextEditingController();
     _description = TextEditingController();
     _userPosition = MapHelper().getPosition();
-    _userPosition.then((value) =>{
-    initializedPosition=value,
-  });
-  }
 
+    _userPosition.then((value) => {
+          initializedPosition = value,
+          positionToSend = value,
+            adressPlacemark = Geolocator().placemarkFromCoordinates(value.latitude, value.longitude),
+            adressPlacemark.then((adress) => {print(adress[0].locality.toString()), adressToSend=adress.first.locality,} ),
+           mapController.onReady.then((controller) => {
+                mapController.move(LatLng(value.latitude, value.longitude), 12),
+                addMarker(Position(
+                    latitude: value.latitude, longitude: value.longitude)),
+                updateMarkers(markersList),
+              })
+        });
+  }
 
   @override
   void dispose() {
@@ -56,9 +74,9 @@ class _AddPostState extends State<AddPost> {
               Container(
                 child: PaddingWith(
                   top: 20,
-                  left: 10,
-                  right: 10,
-                  widget: MyTextField(
+                  left: 20,
+                  right: 20,
+                  widget: MyInputTextField(
                     controller: _title,
                     icon: Icons.label,
                     type: TextInputType.text,
@@ -124,27 +142,43 @@ class _AddPostState extends State<AddPost> {
                 child: Stack(
                   alignment: AlignmentDirectional.centerEnd,
                   children: <Widget>[
-                    MyMap(_userPosition,initializedPosition,[]),
+                    new FlutterMap(
+                        mapController: mapController,
+                        options: new MapOptions(
+                            interactive: false,
+                            center: new LatLng(initializedPosition.latitude,
+                                initializedPosition.longitude),
+                            minZoom: 10.0),
+                        layers: [
+                          new TileLayerOptions(
+                              urlTemplate:
+                                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                              subdomains: ['a', 'b', 'c']),
+                          new MarkerLayerOptions(markers: markersList)
+                        ]),
                     Positioned(
-
-                        child: PaddingWith(right : 15,widget : Container(
-                      decoration: const ShapeDecoration(
-                        color: Colors.lightBlue,
-
-                        shape: CircleBorder(),
-                      ),
-                      child: MyIconButton(
-                        function: () { },
-                        icon: Icon(Icons.place),
-                      ),
-                    )),)
+                      child: PaddingWith(
+                          right: 15,
+                          widget: Container(
+                            decoration: const ShapeDecoration(
+                              color: Colors.lightBlue,
+                              shape: CircleBorder(),
+                            ),
+                            child: MyIconButton(
+                              function: () {
+                                _navigateAndDisplaySelection(context);
+                              },
+                              icon: Icon(Icons.place),
+                            ),
+                          )),
+                    )
                   ],
                 ),
               ),
               PaddingWith(
-                  left: 10,
-                  right: 10,
-                  widget: MyTextField(
+                  left: 20,
+                  right: 20,
+                  widget: MyInputTextField(
                     type: TextInputType.multiline,
                     controller: _description,
                     icon: Icons.dehaze,
@@ -152,13 +186,15 @@ class _AddPostState extends State<AddPost> {
                     labelText: 'Description',
                   )),
               PaddingWith(
-                top:20,
+                  top: 20,
                   bottom: 20,
                   left: 10,
                   right: 10,
                   widget: MyButton(
                     name: 'Publier',
-                    function: (){sendToFirebase();},
+                    function: () {
+                      sendToFirebase();
+                    },
                   )),
             ],
           )),
@@ -172,21 +208,101 @@ class _AddPostState extends State<AddPost> {
   Future<void> takePicture(ImageSource source) async {
     await Permission.photos.request();
     File image = await ImagePicker.pickImage(
-        source: source, maxHeight: 500.0, maxWidth: 500.0, imageQuality: 10);
-    setState(() {
-      imageTaken = image;
-    });
+        source: source, maxHeight: maxHeightImagePost, maxWidth: maxWidthImagePost, imageQuality: 40);
+    if(image!=null){
+      File cropped = await ImageCropper.cropImage(
+          sourcePath: image.path,
+      compressQuality: 100,
+      maxWidth: maxWidthImagePost.toInt(),
+          aspectRatioPresets:[
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9
+          ],
+      maxHeight:maxHeightImagePost.toInt(),
+      compressFormat: ImageCompressFormat.jpg,
+      androidUiSettings: AndroidUiSettings(
+        toolbarColor: Colors.redAccent,
+        toolbarTitle: "RPS Cropper",
+        statusBarColor: Colors.redAccent.shade100,
+        backgroundColor: Colors.white,
+
+      ));
+      setState(() {
+        imageTaken = cropped;
+      });
+    }
+
   }
 
+  // Navigator.pop.
+  _navigateAndDisplaySelection(BuildContext context) async {
+    // Navigator.push returns a Future that completes after calling
+    // Navigator.pop on the Selection Screen.
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Map_Controller(positionToSend!=null?newMarker(positionToSend):newMarker(initializedPosition))),
+    ).then((value) => {
+          if (value != null){
+              setState(() {
+                positionToSend = value;
+                adressPlacemark = Geolocator().placemarkFromCoordinates(positionToSend.latitude, positionToSend.longitude);
+                adressPlacemark.then((adress) => {print(adress[0].locality.toString()), adressToSend=adress.first.administrativeArea,} );
+                _userPosition = Future(() {
+                  print(positionToSend);
+                  return positionToSend;
+                });
+                mapController.move(
+                    LatLng(positionToSend.latitude, positionToSend.longitude),
+                    12);
+                addMarker(Position(
+                    latitude: value.latitude, longitude: value.longitude));
+              })
+            }
+        });
+  }
 
-
-  sendToFirebase(){
+  sendToFirebase() {
     hideKeyBoard();
-    if(imageTaken != null && _title.text!=null &&_title.text!=""){
+    if (imageTaken != null &&
+        _title.text != null &&
+        _title.text != "" &&
+        positionToSend != null &&
+        adressToSend != null
+    ) {
       Navigator.pop(context);
-      _userPosition.then((value) =>
-          FireHelper().addpost(me.uid, _title.text, _description.text, value, imageTaken)
-      );
+
+      FireHelper().addpost(
+          me.uid, _title.text, _description.text, positionToSend,adressToSend, imageTaken);
     }
+  }
+
+  void addMarker(Position position) {
+    this.markersList = [
+      newMarker(position)
+    ];
+  }
+  
+  Marker newMarker(Position position){
+    return new Marker(
+        width: 45.0,
+        height: 45.0,
+        point: new LatLng(position.latitude, position.longitude),
+        builder: (context) => new Container(
+          child: IconButton(
+            icon: Icon(Icons.location_on),
+            color: Colors.blue,
+            iconSize: 45.0,
+            onPressed: () {},
+          ),
+        ));
+  }
+
+  updateMarkers(List<Marker> update) {
+    if(mounted)
+    setState(() {
+      this.markersList = update;
+    });
   }
 }

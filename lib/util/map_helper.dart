@@ -21,7 +21,6 @@ class MapHelper{
       Position position = await Geolocator().getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       this.position = position;
-      print(position);
       return position;
     }
   }

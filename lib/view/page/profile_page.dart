@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/post.dart';
@@ -10,7 +12,7 @@ import 'package:memories/view/page/profile_posts_page.dart';
 import 'package:memories/view/page/profile_tags_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  final User user;
+  User user;
   ProfilePage(this.user);
 
   _ProfileState createState() => _ProfileState();
@@ -23,7 +25,7 @@ class _ProfileState extends State<ProfilePage> {
   var _pageController = PageController();
 
   Map<Months, List<Post>> list;
-
+  StreamSubscription subscription;
   List<DocumentSnapshot> documents;
 
   @override
@@ -37,21 +39,23 @@ class _ProfileState extends State<ProfilePage> {
               onPressed: (() => buttonSelected(0)),
               selected: index == 0,
             ),
-            BarItem(
-              icon: place,
-              onPressed: (() => buttonSelected(1)),
-              selected: index == 1,
-            ),
-            BarItem(
-              icon: tagIcon,
-              onPressed: (() => buttonSelected(2)),
-              selected: index == 2,
-            ),
+            if((!_isme&&!widget.user.isPrivate)||_isme)
+              BarItem(
+                icon: place,
+                onPressed: (() => buttonSelected(1)),
+                selected: index == 1,
+              ),
+            if((!_isme&&!widget.user.isPrivate)||_isme)
+              BarItem(
+                icon: tagIcon,
+                onPressed: (() => buttonSelected(2)),
+                selected: index == 2,
+              ),
+
           ],
         ),
-        Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.8,
+        Expanded(
+
             child: StreamBuilder<QuerySnapshot>(
                 stream: FireHelper().postsFrom(widget.user.uid),
                 builder: (BuildContext context,
@@ -61,11 +65,28 @@ class _ProfileState extends State<ProfilePage> {
                   } else {
                     documents = snapshot.data.documents;
                     sortPosts(documents);
-                    _pages = [
-                      ProfilePostsPage(this._isme,widget.user,documents, this.list),
-                      ProfileMapPage(this.list),
-                      ProfileTagsPage()
-                    ];
+                    if(_isme){
+                      _pages = [
+                        ProfilePostsPage(
+                            this._isme, widget.user, documents, this.list),
+                        ProfileMapPage(this.list),
+                        ProfileTagsPage()
+                      ];
+                    }
+                    if(!_isme&&widget.user.isPrivate) {
+                      _pages = [
+                        ProfilePostsPage(
+                            this._isme, widget.user, documents, this.list),
+                      ];
+                    }
+                    else{
+                      _pages = [
+                        ProfilePostsPage(
+                            this._isme, widget.user, documents, this.list),
+                        ProfileMapPage(this.list),
+                        ProfileTagsPage()
+                      ];
+                    }
                     return PageView(
                       controller: _pageController,
                       onPageChanged: (index) {
@@ -78,15 +99,24 @@ class _ProfileState extends State<ProfilePage> {
                     );
                   }
                 })),
+
+        if(!_isme) PaddingWith(
+
+          widget :FloatingActionButton(child: closeIcon, onPressed: (){Navigator.pop(context);},))
+
       ],
     );
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _isme = (widget.user.uid == me.uid);
+    subscription=FireHelper().fire_user.document(widget.user.uid).snapshots().listen((data) {
+      setState(() {
+        widget.user=User(data);
+      });
+    });
 
   }
 
@@ -95,6 +125,7 @@ class _ProfileState extends State<ProfilePage> {
     if (_pageController != null) {
       _pageController.dispose();
     }
+    subscription.cancel();
     super.dispose();
   }
 

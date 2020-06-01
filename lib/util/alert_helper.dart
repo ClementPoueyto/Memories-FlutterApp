@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:memories/view/my_material.dart';
 
 class AlertHelper{
-  Future<void> error(BuildContext context, String error) async{
-    Text title = Text("Erreur");
+  Future<void> error(BuildContext context,String errorTitle, String error) async{
+    Text title = Text(errorTitle);
     Text subtitle = Text(error);
     return showDialog(context: context,
       barrierDismissible: true,

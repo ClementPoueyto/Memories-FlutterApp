@@ -7,6 +7,7 @@ class User {
   String firstName;
   String lastName;
   String imageUrl;
+  bool isPrivate;
   List<dynamic> followers;
   List<dynamic> following;
   List<dynamic> posts;
@@ -18,6 +19,7 @@ class User {
     documentId = snapshot.documentID;
     Map<String, dynamic> map = snapshot.data;
     uid = map[keyUid];
+    isPrivate = map[keyIsPrivate];
     firstName = map[keyFirstName];
     lastName= map[keyLastName];
     following = map[keyFollowing];
@@ -35,6 +37,7 @@ class User {
       keyFollowing  :following,
       keyFollowers : followers,
       keyPost : posts,
+      keyIsPrivate : isPrivate,
     };
   }
 

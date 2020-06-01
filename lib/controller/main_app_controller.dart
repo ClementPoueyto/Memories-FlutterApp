@@ -48,8 +48,10 @@ class _MainState extends State<MainAppController>{
             BarItem(icon : notificationIcon, onPressed: (()=> buttonSelected(3)), selected: index==3,)],
           shapeCircular: true,
         ),
-        body : showPage(),
-        backgroundColor: Colors.grey,
+        body : GestureDetector(
+          onTap: hideKeyBoard,
+            child :showPage()),
+        backgroundColor: whiteShadow,
       floatingActionButton: FloatingActionButton(onPressed: push, child: addIcon,),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
@@ -65,9 +67,13 @@ class _MainState extends State<MainAppController>{
     });
   }
 
+  void hideKeyBoard(){
+    FocusScope.of(context).requestFocus(new FocusNode());
+  }
+
   Widget showPage(){
     switch(index){
-      case 0 : return FeedPage();
+      case 0 : return FeedPage(me);
       case 1 : return SearchPage();
       case 2 : return ProfilePage(me);
       case 3 : return NotificationPage();

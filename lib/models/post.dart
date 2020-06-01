@@ -18,6 +18,7 @@ class Post{
   List<dynamic> tags;
   List<dynamic> likes;
   List<dynamic> comments;
+  String adress;
 
   Post(DocumentSnapshot snapshot){
     ref = snapshot.reference;
@@ -31,6 +32,8 @@ class Post{
     likes = map[keyLikes];
     comments = map[keyComments];
     id= map[keyPostId];
+    userId=map[keyUid];
+    adress=map[keyAdress];
 
   }
 
@@ -41,12 +44,16 @@ class Post{
       keyLikes:likes,
       keyComments:comments,
       keyTitle:title,
+      keyUid:userId,
     };
     if(description != null){
       map[keyDescription] = description;
     }
     if(position != null){
       map[keyPosition]= [position.latitude,position.longitude];
+    }
+    if(adress !=null){
+      map[keyAdress]=adress;
     }
     if(imageUrl!=null){
       map[keyImageURL] = imageUrl;
