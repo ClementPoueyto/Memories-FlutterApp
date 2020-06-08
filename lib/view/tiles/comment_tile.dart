@@ -19,7 +19,21 @@ class CommentTile extends StatelessWidget {
         if (snap.hasData) {
           User user = User(snap.data);
           return Container(
-            color: white,
+
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: Offset(0.0, 0.6), //(x,y)
+                  blurRadius: 1.0,
+                ),
+              ],
+              borderRadius: BorderRadius.all(Radius.circular(25)),
+              border: Border.all(
+                color: whiteShadow,
+              ),
+              color: white,
+            ),
             margin: EdgeInsets.only(left: 5.0, right: 5.0, top: 2.5),
             padding: EdgeInsets.all(10.0),
             child: Column(
@@ -30,7 +44,12 @@ class CommentTile extends StatelessWidget {
                     Row(
                       children: <Widget>[
                         ProfileImage(urlString: user.imageUrl, onPressed: null, size: 15.0,),
-                        Text("${user.firstName} ${user.lastName}")
+                        PaddingWith(
+                          left: 10,
+                          right: 10,
+                          bottom: 0,
+                          top: 0,
+                          widget:Text("${user.firstName} ${user.lastName}"),),
                       ],
                     ),
                     Text(comment.date,)

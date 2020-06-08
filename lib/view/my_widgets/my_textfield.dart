@@ -11,7 +11,10 @@ class MyFormTextField extends TextFormField{
     labelText: '',
     validator:null,
     maxLines: null,
+    onChanged,
+
 }) : super(
+    onChanged:onChanged,
       validator: validator,
     controller : controller,
     keyboardType: type,
@@ -21,11 +24,6 @@ class MyFormTextField extends TextFormField{
       labelText :labelText,
       labelStyle: TextStyle(color :black),
       hintText: hint,
-
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(width: 1,color: black),
-      ),
       prefixIcon: Icon(
         icon,
         color: base,

@@ -1,17 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/controller/detail_post_controller.dart';
 import 'package:memories/controller/user_controller.dart';
-import 'package:memories/delegate/header_delegate.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/models/post.dart';
-import 'package:memories/util/date_helper.dart';
 import 'package:memories/util/fire_helper.dart';
+import 'package:memories/util/date_helper.dart';
+
 import 'package:memories/view/my_material.dart';
 
 class PostTile extends StatelessWidget{
-
   final Post post;
   final User user;
   final bool detail;
@@ -57,24 +55,39 @@ class PostTile extends StatelessWidget{
                       widget :MyText(post.date.hour.toString()+":"+post.date.minute.toString(),color: black,))
               ],
               ),),
-                ClipRRect(
+                Hero(
+                    tag: "tag"+post.imageUrl.toString(),
+                    child:ClipRRect(
                   borderRadius: BorderRadius.circular(18.0),
-                  child: Image(
+
+                  child: (post.imageUrl!=null&&post.imageUrl!="")?Image(
                       fit: BoxFit.fitWidth,
                       width: MediaQuery.of(context).size.width,
                       image: CachedNetworkImageProvider(post.imageUrl,)
-                  ),
+                  ):SizedBox.shrink(),
+                    ),
                 ),
 
 
               Container(
                 child: Column(children: <Widget>[
                   PaddingWith(
+                    left: 10,
+                    right:10,
                     widget: MyText(post.title, color: black, fontSize: 20,),
                   ),
-
+                  if(post.adress!=null)
+                    PaddingWith(
+                      left: 5,
+                      right:5,
+                      top: 0,
+                      bottom: 0,
+                      widget: MyText("à "+post.adress+" le "+DateHelper().myDate(post.date), color: black, fontSize: 15,),
+                    ),
                   if(post.description!=null)
                     PaddingWith(
+                      left: 5,
+                    right:5,
                     widget: MyText(post.description, color: black, fontSize: 15,),
                   ),
                 ],),
@@ -87,13 +100,14 @@ class PostTile extends StatelessWidget{
                     children: <Widget>[
                       Row(
                         children: <Widget>[
-                          MyIconButton(function: (){FireHelper().addLike(post);},icon: post.likes.contains(me.uid)?likeIconFull:likeIcon,),
+                          MyIconButton(function: (){
+                            FireHelper().addLike(post);},icon: post.likes.contains(me.uid)?likeIconFull:likeIcon,),
                           Text(post.likes.length.toString()),
                         ],
                       ),
                       Row(
                         children: <Widget>[
-                          MyIconButton(function: (){Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,user)));},icon: commentsIcon,),
+                          MyIconButton(function: (){if(detail==true){Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,user)));}},icon: commentsIcon,),
                           Text(post.comments.length.toString()),
                         ],
                       ),
@@ -106,6 +120,7 @@ class PostTile extends StatelessWidget{
         )
     );
   }
+
 
 
 }

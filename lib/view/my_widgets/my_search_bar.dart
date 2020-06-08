@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class MySearchBar extends TextField{
   MySearchBar({
     @required TextEditingController controller,
-    Function onsubmitted,
+    Function onSubmitted,
+    Function onChanged,
     TextInputType type : TextInputType.text,
     String hint: "",
     IconData icon,
@@ -11,14 +12,14 @@ class MySearchBar extends TextField{
     labelText: '',
     maxLines: 1,
   }) : super(
+      onChanged: onChanged,
       controller : controller,
       keyboardType: type,
       obscureText : obscure,
       maxLines : maxLines,
-      onSubmitted: onsubmitted,
+      onSubmitted: onSubmitted,
       decoration : InputDecoration(
           contentPadding: EdgeInsets.zero,
-
           border: new OutlineInputBorder(
             borderRadius: const BorderRadius.all(
               const Radius.circular(40.0),

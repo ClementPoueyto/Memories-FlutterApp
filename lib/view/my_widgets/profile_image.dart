@@ -7,7 +7,8 @@ class ProfileImage extends InkWell {
     onTap : onPressed,
     child : CircleAvatar(
       radius: size,
-      backgroundImage: (urlString!=null&&urlString!="")?CachedNetworkImageProvider(urlString):CachedNetworkImageProvider("https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1901&q=80"),
+      backgroundImage: (urlString!=null&&urlString!="")?CachedNetworkImageProvider(urlString)
+          :CachedNetworkImageProvider("https://green-growth-org-uk.cdn.gofasterstripes.download/sites/default/files/default_images/anonymous-profile_0.png"),
       backgroundColor: white,
     )
   );

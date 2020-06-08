@@ -13,19 +13,22 @@ class MyHeaderPost extends SliverPersistentHeaderDelegate{
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      margin :EdgeInsets.only(bottom: 5.0),
-      padding: EdgeInsets.all(10.0),
-      color:Colors.red ,
-      child :
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: new BorderRadius.circular(12.0),
+      ),
+      elevation: 6,
+      color:base ,
+      child :PaddingWith(
+        widget :
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          Text(month),
-          Text(year)
+          MyText(month,color: white,),
+          MyText(year,color: white, )
         ],
-      ),
+      ),),
     );
   }
 

@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/post.dart';
@@ -23,41 +23,44 @@ class _ProfileState extends State<ProfilePage> {
   int index = 0;
   var _pages;
   var _pageController = PageController();
+  File imageTaken;
 
-  Map<Months, List<Post>> list;
+  ScrollController controller;
+
+  Map<String, List<Post>> list=Map();
   StreamSubscription subscription;
   List<DocumentSnapshot> documents;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return
+      Column(
       children: <Widget>[
         BottomBar(
+          color: base,
           items: [
             BarItem(
+              selectedColor: white,
               icon: postIcon,
               onPressed: (() => buttonSelected(0)),
               selected: index == 0,
             ),
-            if((!_isme&&!widget.user.isPrivate)||_isme)
+            /*if((!_isme&&!widget.user.isPrivate)||_isme)
               BarItem(
-                icon: place,
+                selectedColor: white,
+                icon: tagIcon,
                 onPressed: (() => buttonSelected(1)),
                 selected: index == 1,
-              ),
-            if((!_isme&&!widget.user.isPrivate)||_isme)
-              BarItem(
-                icon: tagIcon,
-                onPressed: (() => buttonSelected(2)),
-                selected: index == 2,
-              ),
+              ),*/
+
 
           ],
         ),
+
         Expanded(
 
             child: StreamBuilder<QuerySnapshot>(
-                stream: FireHelper().postsFrom(widget.user.uid),
+                stream: _isme?FireHelper().myPostsFrom(me.uid):FireHelper().postsFrom(widget.user.uid),
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
@@ -65,12 +68,13 @@ class _ProfileState extends State<ProfilePage> {
                   } else {
                     documents = snapshot.data.documents;
                     sortPosts(documents);
+
                     if(_isme){
                       _pages = [
                         ProfilePostsPage(
                             this._isme, widget.user, documents, this.list),
-                        ProfileMapPage(this.list),
-                        ProfileTagsPage()
+                        //ProfileTagsPage(),
+
                       ];
                     }
                     if(!_isme&&widget.user.isPrivate) {
@@ -83,11 +87,13 @@ class _ProfileState extends State<ProfilePage> {
                       _pages = [
                         ProfilePostsPage(
                             this._isme, widget.user, documents, this.list),
-                        ProfileMapPage(this.list),
-                        ProfileTagsPage()
+                        //ProfileTagsPage(),
+
                       ];
                     }
-                    return PageView(
+                    return Container(
+                      height: MediaQuery.of(context).size.height,
+                      child :PageView(
                       controller: _pageController,
                       onPageChanged: (index) {
                         setState(() {
@@ -96,7 +102,7 @@ class _ProfileState extends State<ProfilePage> {
                       },
                       children:
                           _pages != null ? _pages : <Widget>[LoadingCenter()],
-                    );
+                    ),);
                   }
                 })),
 
@@ -112,6 +118,8 @@ class _ProfileState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _isme = (widget.user.uid == me.uid);
+    controller = ScrollController();
+
     subscription=FireHelper().fire_user.document(widget.user.uid).snapshots().listen((data) {
       setState(() {
         widget.user=User(data);
@@ -125,6 +133,9 @@ class _ProfileState extends State<ProfilePage> {
     if (_pageController != null) {
       _pageController.dispose();
     }
+    if (controller != null) {
+      controller.dispose();
+    }
     subscription.cancel();
     super.dispose();
   }
@@ -132,26 +143,13 @@ class _ProfileState extends State<ProfilePage> {
   void buttonSelected(int pageSelected) {
     setState(() {
       _pageController.animateToPage(pageSelected,
-          duration: Duration(milliseconds: 200), curve: Curves.linear);
+          duration: Duration(milliseconds: 400), curve: Curves.easeIn);
       this.index = pageSelected;
     });
   }
 
   void sortPosts(List<DocumentSnapshot> docs){
-   list={
-    Months.january : [],
-    Months.february : [],
-    Months.march : [],
-    Months.april : [],
-    Months.may : [],
-    Months.june : [],
-    Months.july : [],
-    Months.august : [],
-    Months.september : [],
-    Months.october : [],
-    Months.november : [],
-    Months.december : [],
-    };
+    this.list=Map();
     docs.sort((a,b) {
       DateTime adate = a.data[keyDate].toDate();
       DateTime bdate = b.data[keyDate].toDate();
@@ -159,7 +157,14 @@ class _ProfileState extends State<ProfilePage> {
     });
     for(DocumentSnapshot doc in docs){
       DateTime date = doc.data[keyDate].toDate();
-      this.list[Months.values[date.month-1]].add(Post(doc));
+      String keyMapDate= date.month.toString()+"/"+date.year.toString();
+      if(this.list[keyMapDate]==null){
+        this.list[keyMapDate]=[];
+      }
+      this.list[keyMapDate].add(Post(doc));
+
     }
   }
+
+
 }

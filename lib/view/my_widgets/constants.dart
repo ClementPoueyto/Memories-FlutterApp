@@ -37,6 +37,11 @@ String keyTextNotification = "textNotification";
 String keyType ="type";
 String keyRef = "ref";
 String keySeen = "seen";
+String keyDay="day";
+String keyMonth="month";
+String keyYear = "year";
+String keyFullName="fullName";
+String keyPseudo="pseudo";
 //Icons
 
 Icon homeIcon = Icon(Icons.home);
@@ -55,6 +60,10 @@ Icon likeIcon =Icon(Icons.favorite_border);
 Icon sendIcon = Icon(Icons.send);
 Icon commentsIcon=Icon(Icons.comment);
 Icon editIcon=Icon(Icons.mode_edit);
+Icon backIcon=Icon(Icons.arrow_back);
+Icon galleryIcon= Icon(Icons.photo);
+Icon cameraIcon= Icon(Icons.photo_camera);
+
 
 //enum
 
@@ -73,7 +82,12 @@ enum Months {
   december
 }
 
+
+
 //Position
 
 Position initializedPosition = Position(latitude: 0,longitude: 0);
 
+//Assets
+
+AssetImage searchImage = AssetImage("assets/image/glass.png");

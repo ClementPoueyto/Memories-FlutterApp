@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:clip_shadow/clip_shadow.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -24,7 +27,6 @@ class _RegisterState extends State<RegisterController> {
     _mail = TextEditingController();
     _pwd = TextEditingController();
     _pwd2 = TextEditingController();
-
     _lastName = TextEditingController();
     _firstName = TextEditingController();
   }
@@ -142,6 +144,7 @@ class _RegisterState extends State<RegisterController> {
                                 hint: "Entrez votre nom",
                                 labelText: 'Nom',
                                 icon: Icons.person)),
+
                         PaddingWith(
                             top: 15,
                             bottom: 15,
@@ -211,7 +214,11 @@ class _RegisterState extends State<RegisterController> {
         if (_firstName.text != null && _firstName.text != "") {
           if (_lastName.text != null && _lastName.text != "") {
             FireHelper().createAccount(
-                _mail.text, _pwd.text, _firstName.text, _lastName.text,context);
+                _mail.text, _pwd.text, _firstName.text, _lastName.text,context).then((value) => {
+                  if(value.uid!=null){
+                    Navigator.pop(context)
+                  }
+            });
           }
         }
       } else {
@@ -230,6 +237,8 @@ class _RegisterState extends State<RegisterController> {
       return "champ trop long";
     }
   }
+
+
 
   String validatorMail(String value)
   {

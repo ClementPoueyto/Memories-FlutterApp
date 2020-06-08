@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:691021316143:android:fab37f4b4c8501c24f86da",
         "android_client_info": {
-          "package_name": "com.mencelt.memories"
+          "package_name": "fr.mencelt.memories"
         }
       },
       "oauth_client": [

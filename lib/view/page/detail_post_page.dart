@@ -19,16 +19,19 @@ class DetailPostPage extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot>(
       stream: post.ref.snapshots(),
       builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.hasData&&snapshot.data.exists) {
           Post newPost = Post(snapshot.data);
           return ListView.builder(
               itemCount: newPost.comments.length + 1,
               itemBuilder: (BuildContext ctx, int index) {
                 if (index == 0) {
-                  return PostTile(post: newPost, user: user, detail: true,);
+                  return PostTile(post: newPost, user: user, detail: false,);
                 } else {
                   Comment comment = Comment(newPost.comments[index - 1]);
-                  return CommentTile(comment);
+                  return PaddingWith(
+                    top: 0,
+                    bottom: 10,
+                    widget :CommentTile(comment),);
                 }
               });
         } else {

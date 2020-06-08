@@ -40,7 +40,10 @@ class _MainState extends State<MainAppController>{
   Widget build(BuildContext context) {
     return (me==null)?LoadingScaffold()
         :Scaffold(
-        bottomNavigationBar: BottomBar(items:
+      endDrawer: MyDrawer(user: me,context: context,),
+        bottomNavigationBar: BottomBar(
+          color: whiteShadow,
+          items:
             [BarItem(icon : homeIcon, onPressed: (()=> buttonSelected(0)), selected: index==0,),
             BarItem(icon : searchIcon, onPressed: (()=> buttonSelected(1)), selected: index==1,),
             SizedBox(),
@@ -50,7 +53,9 @@ class _MainState extends State<MainAppController>{
         ),
         body : GestureDetector(
           onTap: hideKeyBoard,
-            child :showPage()),
+            child :Container(
+              height: MediaQuery.of(context).size.height-kToolbarHeight,
+                child :showPage())),
         backgroundColor: whiteShadow,
       floatingActionButton: FloatingActionButton(onPressed: push, child: addIcon,),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -58,7 +63,7 @@ class _MainState extends State<MainAppController>{
   }
 
   push(){
-    Navigator.push(context, MaterialPageRoute(builder: (context) => AddPost()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => AddPost(null)));
   }
 
   buttonSelected(int index){

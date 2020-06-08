@@ -19,6 +19,7 @@ class Post{
   List<dynamic> likes;
   List<dynamic> comments;
   String adress;
+  bool isPrivate;
 
   Post(DocumentSnapshot snapshot){
     ref = snapshot.reference;
@@ -28,13 +29,13 @@ class Post{
     description = map[keyDescription];
     imageUrl = map[keyImageURL];
     date = map[keyDate].toDate();
-    position = Position(latitude: map[keyPosition][0], longitude: map[keyPosition][1]);
+    position = map[keyPosition]!=null?Position(latitude: map[keyPosition][0], longitude: map[keyPosition][1]):null;
     likes = map[keyLikes];
     comments = map[keyComments];
     id= map[keyPostId];
     userId=map[keyUid];
     adress=map[keyAdress];
-
+    isPrivate=map[keyIsPrivate];
   }
 
   Map<String,dynamic> toMap(){
@@ -45,6 +46,7 @@ class Post{
       keyComments:comments,
       keyTitle:title,
       keyUid:userId,
+      keyIsPrivate:isPrivate,
     };
     if(description != null){
       map[keyDescription] = description;

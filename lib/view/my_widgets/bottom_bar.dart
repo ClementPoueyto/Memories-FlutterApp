@@ -4,9 +4,9 @@ import 'package:memories/view/my_material.dart';
 
 class BottomBar extends BottomAppBar {
 
-  BottomBar({@required List<Widget> items, bool shapeCircular : false}) : super(
+  BottomBar({@required List<Widget> items, bool shapeCircular : false, Color color : base}) : super(
     shape: shapeCircular?CircularNotchedRectangle():null,
-    color : whiteShadow,
+    color : color,
     child : Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       mainAxisSize: MainAxisSize.max,

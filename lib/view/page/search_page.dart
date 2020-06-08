@@ -5,6 +5,9 @@ import 'package:memories/models/user.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_widgets/loadingCenter.dart';
+import 'package:memories/view/page/followers_search_page.dart';
+import 'package:memories/view/page/following_search_page.dart';
+import 'package:memories/view/page/query_search_page.dart';
 import 'package:memories/view/tiles/user_tile.dart';
 
 class SearchPage extends StatefulWidget {
@@ -12,18 +15,22 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchState extends State<SearchPage> {
+  int index = 0;
+  var _pages;
+  var _searchPageController = PageController();
+  Future<QuerySnapshot> futureSearchResult;
+  List<User> myQueryResult;
 
-  TextEditingController search;
 
   @override
   void initState() {
     super.initState();
-    search=TextEditingController();
+    _pages = [QuerySearchPage(),FollowersSearchPage(), FollowingSearchPage()];
   }
 
   @override
   void dispose() {
-    search.dispose();
+    _searchPageController.dispose();
     super.dispose();
   }
 
@@ -31,53 +38,21 @@ class _SearchState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height: 100,
-          child: PaddingWith(
-            top: 50,
-            left: 20,
-            right: 20,
-            widget :MySearchBar(
-            controller: search ,
-            labelText: 'Rechercher',
-            hint: "Rechercher un profil",
-            icon:Icons.search,
-            obscure: false,
-            onsubmitted: searchPerson,
+
+        Expanded(
+          child: PageView(
+            controller: _searchPageController,
+            onPageChanged: (index) {
+              setState(() {
+                this.index = index;
+              });
+            },
+            children: _pages != null ? _pages : <Widget>[LoadingCenter()],
           ),
         ),
-        ),
-        PaddingWith(
-            top:20,
-            widget :Text("Mes followers")),
-        Expanded(child :StreamBuilder<QuerySnapshot>(
-          stream: FireHelper().fire_user.snapshots(),
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasData) {
-              List<DocumentSnapshot> documents = snapshot.data.documents;
-              return ListView.builder(
-                  itemCount: documents.length,
-                  itemBuilder: (BuildContext ctx, int index) {
-                    User user = User(documents[index]);
-                    if(user.uid!=me.uid) {
-                      return UserTile(user);
-                    }
-                    else{
-                      return Container(height: 1,);
-                    }
-                  });
-            } else {
-              return LoadingCenter();
-            }
-          },
-        ))
       ],
     );
   }
-}
 
-void searchPerson(String input){
 
 }

@@ -40,7 +40,7 @@ class UserTile extends StatelessWidget{
                       widget:Text("${user.firstName} ${user.lastName}"),),
                   ],
                 ),
-                MyButton(color: me.following.contains(user.uid)? Colors.red:Colors.white,name :me.following.contains(user.uid)?"Se désabonner":"Suivre",function: (){FireHelper().addFollow(user);},),
+                MyButton(color: me.following.contains(user.uid)? Colors.red:Colors.white,name :me.following.contains(user.uid)?"Se désabonner":"Suivre",borderColor: black,textColor:me.following.contains(user.uid)?white:black ,function: (){FireHelper().addFollow(user);},),
               ],
             ),
           ),

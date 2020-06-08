@@ -11,12 +11,14 @@ class Notif {
   DocumentReference ref;
   bool seen;
   String type;
+  Timestamp time;
 
   Notif(DocumentSnapshot snap) {
     notifRef = snap.reference;
     Map<String, dynamic> map = snap.data;
     text = map[keyTextNotification];
     date = DateHelper().myDate(map[keyDate].toDate());
+    time = map[keyDate];
     userId = map[keyUid];
     ref = map[keyRef];
     seen = map[keySeen];

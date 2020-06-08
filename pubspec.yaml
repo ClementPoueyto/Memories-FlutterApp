@@ -1,5 +1,5 @@
 name: memories
-description: A new Flutter application.
+description: Partagez votre meilleur souvenir de la journée avec vos proches.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -32,6 +32,10 @@ dependencies:
   permission_handler: ^5.0.0+hotfix.6
   cached_network_image: ^2.2.0+1
   clip_shadow: ^0.2.1
+  flutter_launcher_icons: ^0.7.5
+  mapbox_search_flutter: ^1.0.4
+  flutter_map_marker_cluster: ^0.2.8
+
 
   # Add the dependency for the FlutterFire plugin for Google Analytics
   firebase_analytics: ^5.0.2
@@ -51,6 +55,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/ic-launcher/launcherIcon.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -63,8 +71,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/image/glass.png
+    - assets/image/default_image.png
+    - assets/ic-launcher/launcherIcon.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

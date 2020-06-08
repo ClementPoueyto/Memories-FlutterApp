@@ -15,7 +15,7 @@ class MyHeader extends SliverPersistentHeaderDelegate{
       height: 100,
       margin :EdgeInsets.only(bottom: 5.0),
       padding: EdgeInsets.all(10.0),
-      color:Colors.red ,
+      color: base ,
       child :
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

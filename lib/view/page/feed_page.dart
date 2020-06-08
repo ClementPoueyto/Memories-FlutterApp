@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +21,14 @@ class _FeedState extends State<FeedPage> {
   List<User> users = [];
   Post lastPost;
   Post memory;
+  double expanded=0;
+  Map<String, List<Post>> sameDay;
 
   @override
   void initState() {
     super.initState();
+    sameDay=Map();
+    sameDay.clear();
     setupSub();
   }
 
@@ -52,23 +54,48 @@ class _FeedState extends State<FeedPage> {
                     if (!snapshot.hasData) {
                       return LoadingCenter();
                     } else {
-                      if (memory == null) this.memory = getMemory(snapshot);
-                      return Column(
+                      if (memory == null){
+                        this.memory = getMemory(snapshot);
+                       if(memory==null) return Center(child: MyText("Pas de souvenir aujourd'hui"),);
+                    }
+                      return Stack(
                         children: <Widget>[
-                          ClipRRect(
+                          (memory.imageUrl!=null&&memory.imageUrl!="")?ClipRRect(
                             borderRadius: BorderRadius.circular(18.0),
-                            child: Image(
+                            child:
+                            Image(
                               fit: BoxFit.fitWidth,
                               width: MediaQuery.of(context).size.width,
                               image: CachedNetworkImageProvider(
                                 memory.imageUrl,
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: PaddingWith(
-                              widget: MyText(
-                                  "Le " + DateHelper().myDate(memory.date)),
+                          ):SizedBox.shrink(),
+                          Positioned(
+                            top: 40,
+                            left: 10,
+                            child:
+                              Container(
+                                decoration: BoxDecoration(
+                                  color:base,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(15)),
+                                  border: Border.all(
+                                    color: accent,
+                                  ),
+                                ),
+                                child:PaddingWith(
+                                  top:5,
+                                  bottom:5,
+                                  left:10,
+                                  right:10,
+                                  widget: MyText(
+                                  "Le " +
+                                      DateHelper().myDate(memory.date) +
+                                      "...",
+                                  color: white,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -76,25 +103,24 @@ class _FeedState extends State<FeedPage> {
                     }
                   }),
             ),
-            expandedHeight: MediaQuery.of(context).size.height / 2,
-            actions: <Widget>[
-              MyIconButton(
-                  icon: settingsIcon,
-                  color: white,
-                  function: () {
-                    FireHelper().logOut();
-                  })
-            ],
+            expandedHeight: 200,
+
           )
         ];
       },
-      body: ListView.builder(
+      body: posts.length==0?Center(child :MyText("Aucune publication n'est disponible",color: black,),):ListView.builder(
           itemCount: posts.length,
           itemBuilder: (BuildContext context, int index) {
             Post post = posts[index];
             User user = users.firstWhere((u) => u.uid == post.userId);
-            if (lastPost != null &&
-                DateHelper().isTheSameDay(lastPost.date, post.date)) {
+            if(sameDay[DateHelper().myDate(post.date)]!=null&&!sameDay[DateHelper().myDate(post.date)].contains(post)){
+              sameDay[DateHelper().myDate(post.date)].add(post);
+            }
+            else{
+              sameDay[DateHelper().myDate(post.date)]=[];
+              sameDay[DateHelper().myDate(post.date)].add(post);
+            }
+            if (sameDay[DateHelper().myDate(post.date)].length>1) {
               lastPost = post;
               return PostTile(
                 post: post,
@@ -148,12 +174,12 @@ class _FeedState extends State<FeedPage> {
   setupSub() {
     sub = FireHelper()
         .fire_user
-        .where(keyFollowers, arrayContains: widget.me.uid)
+        .where(keyFollowers, arrayContains: widget.me.uid).where(keyIsPrivate, isEqualTo: false)
         .snapshots()
         .listen((datas) {
       getUsers(datas.documents);
       datas.documents.forEach((docs) {
-        docs.reference.collection("posts").snapshots().listen((post) {
+        docs.reference.collection("posts").where(keyIsPrivate, isEqualTo: false).snapshots().listen((post) {
           if (mounted) {
             setState(() {
               posts = getPosts(post.documents);
@@ -178,6 +204,7 @@ class _FeedState extends State<FeedPage> {
     });
     setState(() {
       users = myList;
+
     });
   }
 
@@ -185,13 +212,19 @@ class _FeedState extends State<FeedPage> {
     List<Post> myList = posts;
     postDocs.forEach((p) {
       Post post = Post(p);
-      if (myList.every((p) => p.documentId != post.documentId)) {
+      if (myList.every((p) => p.ref != post.ref)) {
         myList.add(post);
-      } else {
-        Post toBeChanged =
-            myList.singleWhere((p) => p.documentId == post.documentId);
-        myList.remove(toBeChanged);
-        myList.add(post);
+      }
+      else {
+        setState(() {
+          sameDay=Map();
+          Post toBeChanged =
+          myList.singleWhere((p) => p.ref == post.ref);
+          myList.remove(toBeChanged);
+          myList.add(post);
+        });
+
+
       }
     });
     myList.sort((a, b) => b.date.compareTo(a.date));
@@ -215,7 +248,13 @@ class _FeedState extends State<FeedPage> {
           post.date.year == today.year) {
         return post;
       }
+      if (post.date.day == today.day-7 &&
+          post.date.month == today.month &&
+          post.date.year == today.year) {
+        return post;
+      }
+
     }
-    return (myPosts.toList()..shuffle()).first;
+    return null;
   }
 }

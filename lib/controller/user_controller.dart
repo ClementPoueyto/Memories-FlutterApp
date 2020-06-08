@@ -16,7 +16,7 @@ class _UserState extends State<UserController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: whiteShadow,
       body: ProfilePage(widget.user),
     );
   }
