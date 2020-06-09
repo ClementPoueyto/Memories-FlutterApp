@@ -1,4 +1,4 @@
-# memories
+# Memories
 
 Memories est un projet personnel réalisé avec Flutter disponible sur Android. C'est un réseau social permettant de créer et partager des souvenirs d'une journée.
 Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=fr.mencelt.memories
