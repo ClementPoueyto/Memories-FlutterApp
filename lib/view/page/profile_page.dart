@@ -106,10 +106,6 @@ class _ProfileState extends State<ProfilePage> {
                   }
                 })),
 
-        if(!_isme) PaddingWith(
-
-          widget :FloatingActionButton(child: closeIcon, onPressed: (){Navigator.pop(context);},))
-
       ],
     );
   }

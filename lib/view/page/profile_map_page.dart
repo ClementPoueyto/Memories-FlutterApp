@@ -70,7 +70,8 @@ class _ProfileMapState extends State<ProfileMapPage> {
         children: <Widget>[
           Container(
               height: MediaQuery.of(context).size.height,
-              child: new FlutterMap(
+              child:
+              new FlutterMap(
                   mapController: mapController,
                   options: new MapOptions(
                     interactive: true,

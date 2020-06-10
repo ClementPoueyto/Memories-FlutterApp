@@ -28,6 +28,7 @@ class _AddPostState extends State<AddPost> {
   MapController mapController = MapController();
   TextEditingController _title;
   TextEditingController _description;
+  TextEditingController _adress;
   Future<Position> _userPosition;
   Position positionToSend;
   String adressToSend;
@@ -45,6 +46,7 @@ class _AddPostState extends State<AddPost> {
     super.initState();
     _title = TextEditingController();
     _description = TextEditingController();
+    _adress = TextEditingController();
     _userPosition =  Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
 
     if (widget.post != null) {
@@ -52,6 +54,7 @@ class _AddPostState extends State<AddPost> {
       imageUrl = post.imageUrl;
       _title.text = post.title;
       _description.text = post.description;
+      _adress.text = post.adress;
       private = post.isPrivate;
       adressToSend = post.adress;
       _userPosition = Future.value(post.position);
@@ -68,10 +71,10 @@ class _AddPostState extends State<AddPost> {
             .placemarkFromCoordinates(value.latitude, value.longitude),
         adressPlacemark.then((adress) =>
         {
-          adressToSend = adress.first.locality,
+          adressToSend = getStringAdress(adress),
+          _adress.text = adressToSend,
         }),
-        mapController.onReady
-            .then((controller) => {moveCameraTo(positionToSend)})
+        mapController.onReady.then((controller) => {moveCameraTo(positionToSend)})
       }
         });
   }
@@ -81,6 +84,7 @@ class _AddPostState extends State<AddPost> {
     super.dispose();
 
     _title.dispose();
+    _adress.dispose();
     _description.dispose();
   }
 
@@ -224,26 +228,14 @@ class _AddPostState extends State<AddPost> {
                         child: Stack(
                           alignment: AlignmentDirectional.centerEnd,
                           children: <Widget>[
-                            new FlutterMap(
-                                mapController: mapController,
-                                options: new MapOptions(
-                                    interactive: false,
-                                    center: new LatLng(
-                                        initializedPosition.latitude,
-                                        initializedPosition.longitude),
-                                    minZoom: 10.0),
-                                layers: [
-                                  new TileLayerOptions(
-                                    urlTemplate:
-                                        "https://api.mapbox.com/styles/v1/mencelt/ckammy4co4y781inrztqiiwvp/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibWVuY2VsdCIsImEiOiJjazl5ZXVnOXUwb3NtM2lvOHl4b3VtMGNmIn0.kyXnFYWW15ocu0mg9ytqCg",
-                                    additionalOptions: {
-                                      'accessToken':
-                                          'pk.eyJ1IjoibWVuY2VsdCIsImEiOiJjazl5ZXVnOXUwb3NtM2lvOHl4b3VtMGNmIn0.kyXnFYWW15ocu0mg9ytqCg',
-                                      'id': 'mapbox.streets',
-                                    },
-                                  ),
-                                  new MarkerLayerOptions(markers: markersList)
-                                ]),
+                            MyMap(
+                              mapController: mapController,
+                              isInteractive: false,
+                              initialPosition: LatLng(initializedPosition.latitude,initializedPosition.longitude),
+                              zoom: 10,
+                              markers: markersList,
+                            ),
+
                             Positioned(
                               child: PaddingWith(
                                   right: 15,
@@ -265,6 +257,17 @@ class _AddPostState extends State<AddPost> {
                       ),
                     ),
                   ),
+                  PaddingWith(
+                      left: 20,
+                      right: 20,
+                      widget: MyInputTextField(
+                        validator: validatorAdress,
+                        type: TextInputType.text,
+                        controller: _adress,
+                        icon: Icons.place,
+                        hint: "Adresse de l'évènement",
+                        labelText: 'Lieu',
+                      )),
                   PaddingWith(
                       left: 20,
                       right: 20,
@@ -369,6 +372,12 @@ class _AddPostState extends State<AddPost> {
     return null;
   }
 
+  String validatorAdress(value){
+    if(value.length>100){
+      return "100 caractères maximum";
+    }
+  }
+
   Future<void> takePicture(ImageSource source) async {
     File image = await ImagePicker.pickImage(
         source: source,
@@ -416,10 +425,12 @@ class _AddPostState extends State<AddPost> {
               setState(() {
                 positionToSend = value;
                 adressPlacemark = Geolocator().placemarkFromCoordinates(
-                    positionToSend.latitude, positionToSend.longitude);
+                    positionToSend.latitude, positionToSend.longitude).catchError((e){print(e);});
                 adressPlacemark.then((adress) => {
-                      adressToSend = adress.first.locality,
-                    });
+                      adressToSend = getStringAdress(adress),
+                  
+                  _adress.text=adressToSend,
+                    }).catchError((e){print(e);});
                 _userPosition = Future(() {
                   return positionToSend;
                 });
@@ -493,5 +504,19 @@ class _AddPostState extends State<AddPost> {
       setState(() {
         this.markersList = update;
       });
+  }
+  
+  getStringAdress(List<Placemark> adress){
+    String res="";
+    if(adress.first.locality!=null&&adress.first.locality!=""){
+      res+=adress.first.locality;
+      if((adress.first.country!=null&&adress.first.country!="")){
+        res+=", ";
+      }
+    }
+    if(adress.first.country!=null&&adress.first.country!=""){
+      res+=adress.first.country;
+    }
+    return res;
   }
 }

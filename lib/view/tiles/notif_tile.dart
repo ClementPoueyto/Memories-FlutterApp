@@ -52,11 +52,10 @@ class NotifTile extends StatelessWidget {
                           Flexible(child :PaddingWith(
                             left: 10,
                             right: 10,
-                            widget :Text(notif.text,),),),
-                          Flexible(child :Text(notif.date, )),
+                            widget :MyText(notif.text,color: black,fontSize: 14,),),),
+                          Flexible(child :MyText(notif.date,color: black, fontSize: 12,)),
                         ],
                       ),
-
                 ),
               ),
             ),

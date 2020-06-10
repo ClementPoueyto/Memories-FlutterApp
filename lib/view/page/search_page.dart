@@ -38,7 +38,6 @@ class _SearchState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-
         Expanded(
           child: PageView(
             controller: _searchPageController,
@@ -49,6 +48,14 @@ class _SearchState extends State<SearchPage> {
             },
             children: _pages != null ? _pages : <Widget>[LoadingCenter()],
           ),
+        ),
+        PaddingWith(
+          bottom: 25,
+          widget :
+        Indicator(
+          controller: _searchPageController,
+          itemCount: 3,
+        ),
         ),
       ],
     );

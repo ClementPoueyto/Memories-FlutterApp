@@ -19,7 +19,6 @@ class _FeedState extends State<FeedPage> {
   StreamSubscription sub;
   List<Post> posts = [];
   List<User> users = [];
-  Post lastPost;
   Post memory;
   double expanded=0;
   Map<String, List<Post>> sameDay;
@@ -121,14 +120,12 @@ class _FeedState extends State<FeedPage> {
               sameDay[DateHelper().myDate(post.date)].add(post);
             }
             if (sameDay[DateHelper().myDate(post.date)].length>1) {
-              lastPost = post;
               return PostTile(
                 post: post,
                 user: user,
                 detail: true,
               );
             } else {
-              lastPost = post;
               return Column(
                 children: <Widget>[
                   PaddingWith(
@@ -204,7 +201,6 @@ class _FeedState extends State<FeedPage> {
     });
     setState(() {
       users = myList;
-
     });
   }
 

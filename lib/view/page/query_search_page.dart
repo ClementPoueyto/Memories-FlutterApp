@@ -6,13 +6,12 @@ import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/user_tile.dart';
 
 class QuerySearchPage extends StatefulWidget {
-
   QuerySearchState createState() => QuerySearchState();
 }
 
 class QuerySearchState extends State<QuerySearchPage> {
   TextEditingController search;
-  String myFilter="";
+  String myFilter = "";
 
   @override
   void initState() {
@@ -62,46 +61,75 @@ class QuerySearchState extends State<QuerySearchPage> {
           thickness: 1,
         ),
         Expanded(
-            child: myFilter==""?Center(child : SizedBox(
-                width: 100,
-                height: 100,
-                child :Image(image: searchImage,))):
-            StreamBuilder<QuerySnapshot>(
-          stream: FireHelper().fire_user.where(keyFullName,isGreaterThanOrEqualTo: myFilter.toLowerCase().trim()).limit(20).snapshots(),
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasData) {
-              if(snapshot.data.documents.length==0){
-                return Center(child: MyText("Aucun utilisateur",color: black,fontSize: 25,),);
-              }
-              List<User> myquery=[];
-                snapshot.data.documents.forEach((u) {
-                    User user = User(u);
-                    myquery.add(user);
-                    },);
-              return ListView.builder(
-                    itemCount: myquery.length,
-                    itemBuilder: (BuildContext ctx, int index) {
-                      User user = myquery[index];
-                      if (user.uid != me.uid) {
-                        return UserTile(user);
+            child: myFilter == ""
+                ? Center(
+                    child: SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: Column(
+                        children: <Widget>[
+                          Center(child: PaddingWith(
+                            bottom: 20,
+                            top: 0,
+                            widget: MyText("Rechercher un utilisateur par son pseudo",color: Colors.grey,),),),
+                          Image(
+                            width: 100,
+                            height: 100,
+                            image: searchImage,
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                : StreamBuilder<QuerySnapshot>(
+                    stream: FireHelper()
+                        .fire_user
+                        .where(keyPseudo,
+                            isEqualTo: myFilter.toLowerCase().trim())
+                        .limit(20)
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasData) {
+                        if (snapshot.data.documents.length == 0) {
+                          return Center(
+                            child: MyText(
+                              "Aucun utilisateur",
+                              color: black,
+                              fontSize: 25,
+                            ),
+                          );
+                        }
+                        List<User> myquery = [];
+                        snapshot.data.documents.forEach(
+                          (u) {
+                            User user = User(u);
+                            myquery.add(user);
+                          },
+                        );
+                        return ListView.builder(
+                          itemCount: myquery.length,
+                          itemBuilder: (BuildContext ctx, int index) {
+                            User user = myquery[index];
+                            if (user.uid != me.uid) {
+                              return UserTile(user);
+                            } else {
+                              return SizedBox.shrink();
+                            }
+                          },
+                        );
                       } else {
                         return SizedBox.shrink();
                       }
                     },
-                  );
-            } else {
-              return SizedBox.shrink();
-            }
-          },
-        )),
+                  )),
       ],
     );
   }
 
   void searchPerson(String input) {
     setState(() {
-      myFilter=input;
+      myFilter = input;
     });
   }
 }

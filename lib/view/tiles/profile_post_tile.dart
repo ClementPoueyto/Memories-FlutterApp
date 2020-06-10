@@ -30,8 +30,7 @@ class ProfilePostTile extends StatelessWidget {
           children: <Widget>[
             if(post.imageUrl!=null&&post.imageUrl!="")
             Expanded(
-              child: Hero(
-                tag: "tag" + post.imageUrl.toString(),
+
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10.0),
                   child: Image(
@@ -40,7 +39,7 @@ class ProfilePostTile extends StatelessWidget {
                         post.imageUrl,
                       )),
                 ),
-              ),
+
             ),
             if(post.imageUrl==null||post.imageUrl=="")
             Flexible(child :Center(child : PaddingWith(

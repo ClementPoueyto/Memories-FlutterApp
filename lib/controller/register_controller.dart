@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clip_shadow/clip_shadow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -19,6 +20,8 @@ class _RegisterState extends State<RegisterController> {
   TextEditingController _mail;
   TextEditingController _pwd;
   TextEditingController _pwd2;
+  TextEditingController _pseudo;
+
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -29,6 +32,7 @@ class _RegisterState extends State<RegisterController> {
     _pwd2 = TextEditingController();
     _lastName = TextEditingController();
     _firstName = TextEditingController();
+    _pseudo = TextEditingController();
   }
 
   @override
@@ -39,6 +43,7 @@ class _RegisterState extends State<RegisterController> {
     _pwd2.dispose();
     _firstName.dispose();
     _lastName.dispose();
+    _pseudo.dispose();
   }
 
   @override
@@ -130,7 +135,7 @@ class _RegisterState extends State<RegisterController> {
                             top: 30,
                             bottom: 15,
                             widget: MyFormTextField(
-                              validator: validatorName,
+                                validator: validatorName,
                                 controller: _firstName,
                                 hint: "Entrez votre prénom",
                                 labelText: 'Prénom',
@@ -144,7 +149,6 @@ class _RegisterState extends State<RegisterController> {
                                 hint: "Entrez votre nom",
                                 labelText: 'Nom',
                                 icon: Icons.person)),
-
                         PaddingWith(
                             top: 15,
                             bottom: 15,
@@ -153,7 +157,18 @@ class _RegisterState extends State<RegisterController> {
                                 controller: _mail,
                                 hint: "Entrez votre adresse mail",
                                 labelText: 'Mail',
-                                icon: Icons.person)),
+                                icon: Icons.mail)),
+                        PaddingWith(
+                            top: 15,
+                            bottom: 15,
+                            widget: MyFormTextField(
+                                validator: validatorName,
+                                controller: _pseudo,
+                                hint: "Entrez votre pseudo",
+                                obscure: false,
+                                maxLines: 1,
+                                labelText: 'Pseudo',
+                                icon: Icons.mode_edit)),
                         PaddingWith(
                             top: 15,
                             bottom: 15,
@@ -208,67 +223,86 @@ class _RegisterState extends State<RegisterController> {
     );
   }
 
-  void signIn() {
-    if (_mail.text != null && _mail.text != "") {
-      if (_pwd.text != null && _pwd.text != "") {
-        if (_firstName.text != null && _firstName.text != "") {
-          if (_lastName.text != null && _lastName.text != "") {
-            FireHelper().createAccount(
-                _mail.text, _pwd.text, _firstName.text, _lastName.text,context).then((value) => {
-                  if(value.uid!=null){
-                    Navigator.pop(context)
-                  }
-            });
-          }
-        }
-      } else {
-        //alerte mdp vide
-      }
-    } else {
-      //alerte mail vide
+  Future<bool> checkUser(String input) async {
+    var user = await FireHelper()
+        .fire_user
+        .where(keyPseudo, isEqualTo: input.toLowerCase())
+        .getDocuments();
+    return Future.value(user.documents.length == 0);
+  }
+
+  void signIn() async {
+    if (_mail.text != null &&
+        _mail.text != "" &&
+        _pwd.text != null &&
+        _pwd.text != "" &&
+        _firstName.text != null &&
+        _firstName.text != "" &&
+        _lastName.text != null &&
+        _lastName.text != "" &&
+        _pseudo.text != null &&
+        _pseudo.text != "") {
+      Future<bool> isPseudoTaken = checkUser(_pseudo.text);
+      isPseudoTaken.then(
+        (bool) => {
+          if (bool == true)
+            {
+              FireHelper()
+                  .createAccount(_mail.text, _pwd.text, _firstName.text,
+                      _lastName.text, _pseudo.text.toLowerCase(), context)
+                  .then(
+                    (value) => {
+                      if (value.uid != null) {Navigator.pop(context)}
+                    },
+                  ),
+            }
+          else
+            {
+              AlertHelper().error(context, "Mauvais Pseudo",
+                  "Désolé, ce pseudo a déjà été pris")
+            },
+        },
+      );
     }
   }
 
-  String validatorName(String value){
-    if(value.isEmpty){
+  String validatorName(String value) {
+    if (value.isEmpty) {
       return 'Merci de remplir ce champ';
     }
-    if(value.length>100){
+    if (value.length > 100) {
       return "champ trop long";
     }
   }
 
-
-
-  String validatorMail(String value)
-  {
+  String validatorMail(String value) {
     if (value.isEmpty) {
       return 'Merci de remplir ce champ';
     }
-    if(!value.contains("@")){
+    if (!value.contains("@")) {
       return 'Adresse mail non valide';
     }
-    if(value.length>100){
+    if (value.length > 100) {
       return "mail trop long";
     }
     return null;
   }
+
   String validatorPwd(value) {
     if (value.isEmpty) {
       return 'Merci de remplir ce champ';
     }
-    if(value.length<6){
+    if (value.length < 6) {
       return 'Le mot de passe doit contenir au moins 6 caractères';
     }
-    if(value.length>100){
+    if (value.length > 100) {
       return "mot de passe trop long";
     }
-    if(_pwd.text!=_pwd2.text){
+    if (_pwd.text != _pwd2.text) {
       return "mots de passe differents";
     }
     return null;
   }
-
 
   void hideKeyBoard() {
     FocusScope.of(context).requestFocus(new FocusNode());

@@ -45,31 +45,13 @@ class _MapState extends State<Map_Controller> {
                     Expanded(
                         child: Stack(
                       children: <Widget>[
-                        new FlutterMap(
-                            mapController: _mapController,
-                            options: new MapOptions(
-                                plugins: [
-
-                                ],
-                                onTap: getTapLatLng,
-                                interactive: true,
-                                center: new LatLng(
-                                    widget.initMarker.point.latitude,
-                                    widget.initMarker.point.longitude),
-                                zoom: 10),
-                            layers: [
-                              new TileLayerOptions(
-                                urlTemplate:
-                                    "https://api.mapbox.com/styles/v1/mencelt/ckammy4co4y781inrztqiiwvp/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibWVuY2VsdCIsImEiOiJjazl5ZXVnOXUwb3NtM2lvOHl4b3VtMGNmIn0.kyXnFYWW15ocu0mg9ytqCg",
-                                additionalOptions: {
-                                  'accessToken':
-                                      'pk.eyJ1IjoibWVuY2VsdCIsImEiOiJjazl5ZXVnOXUwb3NtM2lvOHl4b3VtMGNmIn0.kyXnFYWW15ocu0mg9ytqCg',
-                                  'id': 'mapbox.streets',
-                                },
-                              ),
-                              new MarkerLayerOptions(
-                                  markers: spotted != null ? [spotted] : [])
-                            ]),
+                        MyMap(mapController: _mapController,
+                            onTap: tapForPlace,
+                            isInteractive: true,
+                            initialPosition: widget.initMarker.point,
+                            zoom: 10,
+                            minZoom: 3,
+                        markers: spotted != null ? [spotted] : [],),
                         Positioned(
                           child: PaddingWith(
                               left: 20,
@@ -143,7 +125,7 @@ class _MapState extends State<Map_Controller> {
   }
 
   getTapLatLng(LatLng point) {
-    if(mounted&&!_keyboardIsVisible()) {
+    if(mounted) {
       setState(() {
         spotted = Marker(
           width: 85.0,
@@ -167,15 +149,23 @@ class _MapState extends State<Map_Controller> {
         );
       });
     }
-    else{
-      hideKeyBoard();
-    }
   }
 
   searchForPlace(MapBoxPlace input) async {
     LatLng point = LatLng(input.center[1], input.center[0]);
     getTapLatLng(point);
     _mapController.move(point, 10);
+    hideKeyBoard();
+  }
+
+  tapForPlace(LatLng point){
+    if(!_keyboardIsVisible()) {
+      getTapLatLng(point);
+    }
+    else{
+      hideKeyBoard();
+    }
+
   }
 
   void hideKeyBoard() {

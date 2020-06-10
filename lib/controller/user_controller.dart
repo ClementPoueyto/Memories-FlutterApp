@@ -16,6 +16,8 @@ class _UserState extends State<UserController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: PaddingWith(widget :FloatingActionButton(child: closeIcon, onPressed: (){Navigator.pop(context);},)),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       backgroundColor: whiteShadow,
       body: ProfilePage(widget.user),
     );

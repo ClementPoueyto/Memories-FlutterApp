@@ -8,6 +8,7 @@ class User {
   String lastName;
   String fullName;
   String imageUrl;
+  String pseudo;
   bool isPrivate;
   List<dynamic> followers;
   List<dynamic> following;
@@ -26,6 +27,7 @@ class User {
     fullName=map[keyFullName];
     following = map[keyFollowing];
     followers= map[keyFollowers];
+    pseudo= map[keyPseudo];
     imageUrl = map[keyImageURL];
     posts = map[keyPost];
   }
@@ -38,6 +40,7 @@ class User {
       keyFullName : firstName+lastName,
       keyImageURL : imageUrl,
       keyFollowing  :following,
+      keyPseudo : pseudo,
       keyFollowers : followers,
       keyPost : posts,
       keyIsPrivate : isPrivate,

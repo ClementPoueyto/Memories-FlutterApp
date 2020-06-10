@@ -55,9 +55,7 @@ class PostTile extends StatelessWidget{
                       widget :MyText(post.date.hour.toString()+":"+post.date.minute.toString(),color: black,))
               ],
               ),),
-                Hero(
-                    tag: "tag"+post.imageUrl.toString(),
-                    child:ClipRRect(
+                    ClipRRect(
                   borderRadius: BorderRadius.circular(18.0),
 
                   child: (post.imageUrl!=null&&post.imageUrl!="")?Image(
@@ -66,7 +64,7 @@ class PostTile extends StatelessWidget{
                       image: CachedNetworkImageProvider(post.imageUrl,)
                   ):SizedBox.shrink(),
                     ),
-                ),
+
 
 
               Container(
@@ -82,7 +80,14 @@ class PostTile extends StatelessWidget{
                       right:5,
                       top: 0,
                       bottom: 0,
-                      widget: MyText("à "+post.adress+" le "+DateHelper().myDate(post.date), color: black, fontSize: 15,),
+                      widget: MyText("à "+post.adress, color: black, fontSize: 15,),
+                    ),
+                    PaddingWith(
+                      left: 5,
+                      right:5,
+                      top: 0,
+                      bottom: 0,
+                      widget: MyText("le "+DateHelper().myDate(post.date), color: black, fontSize: 15,),
                     ),
                   if(post.description!=null)
                     PaddingWith(

@@ -53,7 +53,7 @@ class FireHelper{
     return user;
   }
   
-  Future<FirebaseUser> createAccount(String mail, String pwd, String name, String surname, BuildContext context) async {
+  Future<FirebaseUser> createAccount(String mail, String pwd, String name, String surname,String pseudo, BuildContext context) async {
     FirebaseUser user;
     String errorMessage;
     try {
@@ -67,7 +67,8 @@ class FireHelper{
         keyUid : id,
         keyFirstName :name,
         keyLastName:surname,
-        keyFullName:name +surname.toLowerCase(),
+        keyPseudo:pseudo,
+        keyFullName:name.toLowerCase() +surname.toLowerCase(),
         keyImageURL:"",
         keyFollowers:followers,
         keyFollowing : following,
@@ -104,7 +105,6 @@ class FireHelper{
 
   static final data_instance = Firestore.instance;
   final fire_user = data_instance.collection("users");
-  final fire_notif = data_instance.collection("notifications");
 
   Stream<QuerySnapshot> postsFrom(String uid) => fire_user.document(uid).collection("posts").where(keyIsPrivate, isEqualTo: false).snapshots();
   Stream<QuerySnapshot> myPostsFrom(String uid) => fire_user.document(uid).collection("posts").snapshots();
@@ -158,7 +158,11 @@ class FireHelper{
       post.ref.updateData({keyLikes:FieldValue.arrayRemove([me.uid])});
     } else{
       post.ref.updateData({keyLikes:FieldValue.arrayUnion([me.uid])});
-      addNotification(me.uid, post.userId, "${me.firstName} ${me.lastName} a aimé votre post", post.ref, keyLikes);
+      if(me.uid!=post.userId) {
+        addNotification(me.uid, post.userId,
+            "${me.firstName} ${me.lastName} a aimé votre post", post.ref,
+            keyLikes);
+      }
     }
   }
 
@@ -169,12 +173,16 @@ class FireHelper{
       keyDate: DateTime.now(),
     };
     ref.updateData({keyComments: FieldValue.arrayUnion([map])});
-    addNotification(me.uid, postOwner, "${me.firstName} ${me.lastName} a commenté votre post", ref, keyComments);
+    if(postOwner!=me.uid) {
+      addNotification(me.uid, postOwner,
+          "${me.firstName} ${me.lastName} a commenté votre post", ref,
+          keyComments);
+    }
   }
 
 
   addpost(String uid, String  title, String description, Position position, String adress ,File file,bool private){
-    DateTime date =  DateTime.now();
+    DateTime date =  DateTime.now().toUtc();
     List<dynamic> likes = [];
     List<dynamic> comments = [];
     Map<String, dynamic> map = {

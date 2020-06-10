@@ -15,3 +15,5 @@ export 'my_widgets/my_search_bar.dart';
 export 'my_widgets/loadingCenter.dart';
 export 'my_widgets/my_text.dart';
 export 'my_widgets/my_drawer.dart';
+export 'my_widgets/my_indicator.dart';
+export 'my_widgets/my_map.dart';

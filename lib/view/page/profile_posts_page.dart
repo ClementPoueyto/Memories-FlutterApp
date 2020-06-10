@@ -86,6 +86,20 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
                     },
                   ),
                   ),
+                  if(!widget.isme)
+                    PaddingWith(
+                      top: 0,
+                      left: 10,
+                      right: 10,
+                      bottom: 0,
+                      widget :MyIconButton(
+                        icon: me.following.contains(widget.user.uid)?Icon(Icons.clear):Icon(Icons.assignment_turned_in),
+                        color: me.following.contains(widget.user.uid)?Colors.red:white,
+                        function: () {
+                          followUser(widget.user);
+                        },
+                      ),
+                    ),
                 PaddingWith(
                   top: 0,
                   left: 10,
@@ -156,6 +170,12 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
       },
     );
     return list;
+  }
+
+  void followUser(User user) async{
+    await FireHelper().addFollow(user);
+    setState(() {
+    });
   }
 
   void changeUser() {

@@ -91,3 +91,4 @@ Position initializedPosition = Position(latitude: 0,longitude: 0);
 //Assets
 
 AssetImage searchImage = AssetImage("assets/image/glass.png");
+

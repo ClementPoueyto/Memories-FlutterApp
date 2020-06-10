@@ -33,12 +33,14 @@ class SettingsState extends State<SettingsController> {
             top: 20,
             widget: Center(
               child: MyText(
-                "Compte",
+                "Informations du compte",
                 color: black,
                 fontSize: 25,
               ),
             ),
           ),
+          Divider(),
+          PaddingWith(widget :Center(child :MyText("Mon pseudo : "+ widget.user.pseudo,color: black ,),),),
           Divider(),
           PaddingWith(
             widget: Row(
