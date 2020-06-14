@@ -51,6 +51,7 @@ class _MapState extends State<Map_Controller> {
                             initialPosition: widget.initMarker.point,
                             zoom: 10,
                             minZoom: 3,
+                            maxZoom: 18,
                         markers: spotted != null ? [spotted] : [],),
                         Positioned(
                           child: PaddingWith(

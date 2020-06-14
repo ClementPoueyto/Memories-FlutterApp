@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:memories/controller/map_selector_controller.dart';
 import 'package:memories/models/post.dart';
@@ -31,7 +32,6 @@ class _AddPostState extends State<AddPost> {
   TextEditingController _adress;
   Future<Position> _userPosition;
   Position positionToSend;
-  String adressToSend;
   File imageTaken;
   String imageUrl;
   List<Marker> markersList = [];
@@ -56,7 +56,7 @@ class _AddPostState extends State<AddPost> {
       _description.text = post.description;
       _adress.text = post.adress;
       private = post.isPrivate;
-      adressToSend = post.adress;
+      _adress.text = post.adress;
       _userPosition = Future.value(post.position);
       positionToSend = post.position;
 
@@ -71,8 +71,8 @@ class _AddPostState extends State<AddPost> {
             .placemarkFromCoordinates(value.latitude, value.longitude),
         adressPlacemark.then((adress) =>
         {
-          adressToSend = getStringAdress(adress),
-          _adress.text = adressToSend,
+
+          _adress.text = getStringAdress(adress),
         }),
         mapController.onReady.then((controller) => {moveCameraTo(positionToSend)})
       }
@@ -233,6 +233,8 @@ class _AddPostState extends State<AddPost> {
                               isInteractive: false,
                               initialPosition: LatLng(initializedPosition.latitude,initializedPosition.longitude),
                               zoom: 10,
+                              minZoom: 3,
+                              maxZoom: 18,
                               markers: markersList,
                             ),
 
@@ -427,9 +429,8 @@ class _AddPostState extends State<AddPost> {
                 adressPlacemark = Geolocator().placemarkFromCoordinates(
                     positionToSend.latitude, positionToSend.longitude).catchError((e){print(e);});
                 adressPlacemark.then((adress) => {
-                      adressToSend = getStringAdress(adress),
-                  
-                  _adress.text=adressToSend,
+
+                  _adress.text= getStringAdress(adress),
                     }).catchError((e){print(e);});
                 _userPosition = Future(() {
                   return positionToSend;
@@ -444,12 +445,12 @@ class _AddPostState extends State<AddPost> {
         });
   }
 
-  sendToFirebase() {
+  sendToFirebase()async {
     hideKeyBoard();
     if (_title.text != null && _title.text != "") {
       if (post == null) {
-        FireHelper().addpost(me.uid, _title.text, _description.text,
-            positionToSend, adressToSend, imageTaken, private);
+        FireHelper().addpost(context,me.uid, _title.text, _description.text,
+            positionToSend, _adress.text, imageTaken, private);
       } else {
         FireHelper().modifyPost(
           post.documentId,
@@ -457,15 +458,29 @@ class _AddPostState extends State<AddPost> {
             _title.text,
             _description.text,
             positionToSend,
-            adressToSend,
+            _adress.text,
             imageTaken,
             imageUrl,
             private,
             post.date,
             post.likes,
-            post.comments);
+            post.comments).whenComplete(() => Fluttertoast.showToast(
+            msg: "Modifié avec succès",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0
+        )).catchError((err)=>
+            Fluttertoast.showToast(
+                msg: "erreur : "+err.toString(),
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                fontSize: 16.0
+            ));
+          Navigator.of(context).popUntil((route) =>
+          route.isFirst);
       }
-      Navigator.of(context).popUntil((route) => route.isFirst);
 
     }
 

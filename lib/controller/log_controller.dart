@@ -15,6 +15,7 @@ class _LogState extends State<LogController> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: NotificationListener<OverscrollIndicatorNotification>(
+      // ignore: missing_return
       onNotification: (overscroll) {
         overscroll.disallowGlow();
       },

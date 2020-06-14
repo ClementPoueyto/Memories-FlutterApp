@@ -74,6 +74,8 @@ class _ProfileMapState extends State<ProfileMapPage> {
               new FlutterMap(
                   mapController: mapController,
                   options: new MapOptions(
+                    minZoom: 3,
+                    maxZoom: 18,
                     interactive: true,
                     center: new LatLng(initializedPosition.latitude,
                         initializedPosition.longitude),

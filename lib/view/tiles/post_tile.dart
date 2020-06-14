@@ -18,6 +18,7 @@ class PostTile extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.all( 5.0),
@@ -28,7 +29,7 @@ class PostTile extends StatelessWidget{
           elevation: 10,
           child :GestureDetector(
             onTap: (){
-              if(user.uid!=me.uid)
+              if(user.uid!=me.uid&&detail==true)
               Navigator.push(context, MaterialPageRoute(builder: (context) => UserController(user)));},
           child :Column(
               children: <Widget>[

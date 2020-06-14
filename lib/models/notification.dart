@@ -7,7 +7,8 @@ class Notif {
   DocumentReference notifRef;
   String text;
   String date;
-  String userId;
+  String idFrom;
+  String idTo;
   DocumentReference ref;
   bool seen;
   String type;
@@ -19,7 +20,8 @@ class Notif {
     text = map[keyTextNotification];
     date = DateHelper().myDate(map[keyDate].toDate());
     time = map[keyDate];
-    userId = map[keyUid];
+    idFrom=map[keyIdFrom];
+    idTo=map[keyIdTo];
     ref = map[keyRef];
     seen = map[keySeen];
     type = map[keyType];

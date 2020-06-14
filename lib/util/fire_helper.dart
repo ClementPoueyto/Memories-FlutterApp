@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
@@ -105,6 +106,7 @@ class FireHelper{
 
   static final data_instance = Firestore.instance;
   final fire_user = data_instance.collection("users");
+  final fire_app = data_instance.collection("app");
 
   Stream<QuerySnapshot> postsFrom(String uid) => fire_user.document(uid).collection("posts").where(keyIsPrivate, isEqualTo: false).snapshots();
   Stream<QuerySnapshot> myPostsFrom(String uid) => fire_user.document(uid).collection("posts").snapshots();
@@ -113,30 +115,33 @@ class FireHelper{
     fire_user.document(id).setData(map);
   }
 
-  addNotification(String from, String to, String text, DocumentReference ref, String type) {
+  addNotification(String from, String to, String text, DocumentReference ref, String type, DateTime date) {
     Map<String, dynamic> map = {
-      keyUid: from,
       keyTextNotification: text,
       keyType: type,
       keyRef: ref,
       keySeen: false,
-      keyDate: DateTime.now(),
+      keyDate: date,
+      keyIdFrom: from,
+      keyIdTo : to,
+      "content"  : text,
     };
     fire_user.document(to).collection("notifications").getDocuments().then((value) => {
-        fire_user.document(to).collection("notifications").add(map)
+        fire_user.document(to).collection("notifications").document(date.millisecondsSinceEpoch.toString()).setData(map)
 
     });
   }
 
   addFollow(User other){
-    if(me.following.contains(other.uid)){
+    DateTime date =DateTime.now();
+  if(me.following.contains(other.uid)){
       me.ref.updateData({keyFollowing: FieldValue.arrayRemove([other.uid])});
       other.ref.updateData({keyFollowers:FieldValue.arrayRemove([me.uid])});
     }
     else{
       me.ref.updateData({keyFollowing:FieldValue.arrayUnion([other.uid])});
       other.ref.updateData({keyFollowers:FieldValue.arrayUnion([me.uid])});
-      addNotification(me.uid, other.uid, "${me.firstName} ${me.lastName} a commencé à vous suivre", me.ref, keyFollowers);
+      addNotification(me.uid, other.uid, "${me.firstName} ${me.lastName} a commencé à vous suivre", me.ref, keyFollowers,date);
 
     }
   }
@@ -154,35 +159,60 @@ class FireHelper{
   }
 
   addLike(Post post){
+    DateTime date =DateTime.now();
     if(post.likes.contains(me.uid)){
       post.ref.updateData({keyLikes:FieldValue.arrayRemove([me.uid])});
     } else{
       post.ref.updateData({keyLikes:FieldValue.arrayUnion([me.uid])});
       if(me.uid!=post.userId) {
+
         addNotification(me.uid, post.userId,
             "${me.firstName} ${me.lastName} a aimé votre post", post.ref,
-            keyLikes);
+            keyLikes, date);
+
+        /*var documentReference = Firestore.instance
+            .collection('users')
+            .document(post.userId)
+            .collection("notifications")
+            .document(date.millisecondsSinceEpoch.toString());
+
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.set(
+            documentReference,
+            {
+              'idFrom': me.uid,
+              'idTo': post.userId,
+              'timestamp': date
+                  .millisecondsSinceEpoch
+                  .toString(),
+              'content': "test",
+              'type': "test"
+            },
+          );
+        });*/
+
       }
     }
   }
 
   addComment(DocumentReference ref, String text, String postOwner) {
+    DateTime date = DateTime.now();
     Map<dynamic, dynamic> map = {
       keyUid: me.uid,
       keyTextComment: text,
-      keyDate: DateTime.now(),
+      keyDate: date,
     };
     ref.updateData({keyComments: FieldValue.arrayUnion([map])});
     if(postOwner!=me.uid) {
       addNotification(me.uid, postOwner,
-          "${me.firstName} ${me.lastName} a commenté votre post", ref,
-          keyComments);
+          "${me.firstName} ${me.lastName} a commenté votre publication", ref,
+          keyComments, date );
     }
   }
 
 
-  addpost(String uid, String  title, String description, Position position, String adress ,File file,bool private){
-    DateTime date =  DateTime.now().toUtc();
+  Future<void> addpost(BuildContext context,String uid, String  title, String description, Position position, String adress ,File file,bool private){
+    DateTime date =  DateTime.now();
     List<dynamic> likes = [];
     List<dynamic> comments = [];
     Map<String, dynamic> map = {
@@ -207,15 +237,51 @@ class FireHelper{
       addImage(file, ref).then((finalised) {
         String imageUrl = finalised;
         map[keyImageURL] = imageUrl;
-        fire_user.document(uid).collection("posts").document(DateHelper().myDate(date)).setData(map);
+        return addPostToDatabase(context, DateHelper().myDate(date), map);
       });
     }else{
-      fire_user.document(uid).collection("posts").document(DateHelper().myDate(date)).setData(map);
+     return addPostToDatabase(context, DateHelper().myDate(date), map);
+
     }
   }
 
+  Future<bool> _checkIfAlreadyPosted(String uid,String date) async {
+    final snapShot = await fire_user.document(uid).collection("posts").document(date).get();
+    if (snapShot == null || !snapShot.exists) {
+      return false;
+    }
+    else{
+      return true;
+    }
+  }
 
-  modifyPost(String id,String uid, String  title, String description, Position position, String adress ,File file,String imageUrl,bool private,DateTime date,List<dynamic> likes,List<dynamic> comments){
+  Future<void> addPostToDatabase(BuildContext context,String date,Map<String, dynamic> map)async {
+     bool isPosted = await _checkIfAlreadyPosted(map[keyUid], date);
+      if(isPosted==true){
+        AlertHelper().overwrite(context, "Vous avez déjà publié aujourd'hui", "Voulez-vous supprimer l'ancienne publication ?", map, date);
+      }
+      else{
+        Navigator.pop(context);
+        return fire_user.document(map[keyUid]).collection("posts").document(date).setData(map).whenComplete(() =>
+              Fluttertoast.showToast(
+                  msg: "Publié avec succès",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  fontSize: 16.0
+              )).catchError((e)=>Fluttertoast.showToast(
+            msg: "erreur : "+e.toString(),
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0
+        ));
+      }
+
+  }
+
+
+  Future <void> modifyPost(String id,String uid, String  title, String description, Position position, String adress ,File file,String imageUrl,bool private,DateTime date,List<dynamic> likes,List<dynamic> comments)async {
     Map<String, dynamic> map = {
       keyUid : uid,
       keyTitle : title,
@@ -236,20 +302,24 @@ class FireHelper{
     }
     StorageReference ref = storage_posts.child(uid).child(DateHelper().myDate(date));
     if(file!=null) {
-      addImage(file, ref).then((finalised) {
+       await addImage(file, ref).then((finalised) {
         String imageUrl = finalised;
         map[keyImageURL] = imageUrl;
-        fire_user.document(uid).collection("posts").document(id).setData(map);
+        return fire_user.document(uid).collection("posts").document(id).setData(map);
 
       });
     }
     else if(file==null&&(imageUrl==null||imageUrl=="")){
-      ref.delete().then((value) => null).catchError((e){});
+      ref.getDownloadURL().then((value) => {
+        if(value!=null){
+          ref.delete().then((value) => null).catchError((e){})
+    }
+      }).catchError((e)=>print(e));
       map[keyImageURL]="";
-      fire_user.document(uid).collection("posts").document(id).setData(map);
+      return fire_user.document(uid).collection("posts").document(id).setData(map);
     }
     else{
-      fire_user.document(uid).collection("posts").document(id).setData(map);
+      return fire_user.document(uid).collection("posts").document(id).setData(map);
     }
 
 

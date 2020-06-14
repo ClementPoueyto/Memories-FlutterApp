@@ -65,7 +65,7 @@ class FollowingSearchState extends State<FollowingSearchPage> {
                   (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
                   List<DocumentSnapshot> documents = snapshot.data.documents;
-                  if(documents.length==0){
+                  if(documents.length<=1){
                     return Center(child: MyText("Aucun abonnement",color: black,fontSize: 18,),);
                   }
                   return ListView.builder(

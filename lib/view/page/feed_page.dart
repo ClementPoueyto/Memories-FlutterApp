@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/controller/detail_post_controller.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/date_helper.dart';
@@ -10,7 +11,7 @@ import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/post_tile.dart';
 
 class FeedPage extends StatefulWidget {
-  User me;
+  final User me;
   FeedPage(this.me);
   _FeedState createState() => _FeedState();
 }
@@ -57,7 +58,9 @@ class _FeedState extends State<FeedPage> {
                         this.memory = getMemory(snapshot);
                        if(memory==null) return Center(child: MyText("Pas de souvenir aujourd'hui"),);
                     }
-                      return Stack(
+                      return GestureDetector(
+                        onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(memory,me)));},
+                        child: Stack(
                         children: <Widget>[
                           (memory.imageUrl!=null&&memory.imageUrl!="")?ClipRRect(
                             borderRadius: BorderRadius.circular(18.0),
@@ -69,7 +72,12 @@ class _FeedState extends State<FeedPage> {
                                 memory.imageUrl,
                               ),
                             ),
-                          ):SizedBox.shrink(),
+                          ):PaddingWith(
+                            left: 10,
+                            right: 10,
+                            widget :SizedBox(
+                            child: Center(child: MyText(memory.title,color: white,fontSize: 20,),),),
+                          ),
                           Positioned(
                             top: 40,
                             left: 10,
@@ -98,6 +106,7 @@ class _FeedState extends State<FeedPage> {
                             ),
                           ),
                         ],
+                      ),
                       );
                     }
                   }),

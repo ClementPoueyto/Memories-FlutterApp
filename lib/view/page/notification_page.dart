@@ -34,8 +34,8 @@ class NotificationState extends State<NotificationPage> {
     widget.myNotifs.forEach((element) {
       Notif myNotif = Notif(element);
       sortedNotif.add(myNotif);
-      if (!usersId.contains(myNotif.userId)) {
-        usersId.add(myNotif.userId);
+      if (!usersId.contains(myNotif.idFrom)) {
+        usersId.add(myNotif.idFrom);
       }
     });
     sortedNotif.sort((a, b) => b.time.compareTo(a.time));
@@ -48,7 +48,7 @@ class NotificationState extends State<NotificationPage> {
       ),
       body: Container(
         height: MediaQuery.of(context).size.height,
-        child: ListView(
+        child: widget.myNotifs.length==0?Center(child: MyText("Aucune notification",color: black, fontSize: 18,),):ListView(
           addAutomaticKeepAlives: true,
           children: <Widget>[
             Container(
@@ -93,13 +93,13 @@ class NotificationState extends State<NotificationPage> {
                               width: 100,
                               height: 100,
                               child: usersNotif
-                                          .where((element) => element.uid == sortedNotif[index].userId)
+                                          .where((element) => element.uid == sortedNotif[index].idFrom)
                                           .length > 0
                                   ? NotifTile(
                                       sortedNotif[index],
                                       usersNotif.firstWhere((element) =>
                                           element.uid ==
-                                          sortedNotif[index].userId))
+                                          sortedNotif[index].idFrom))
                                   : SizedBox.shrink(),
                             );
                           }

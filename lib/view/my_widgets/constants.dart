@@ -42,6 +42,8 @@ String keyMonth="month";
 String keyYear = "year";
 String keyFullName="fullName";
 String keyPseudo="pseudo";
+String keyIdFrom="idFrom";
+String keyIdTo = "idTo";
 //Icons
 
 Icon homeIcon = Icon(Icons.home);

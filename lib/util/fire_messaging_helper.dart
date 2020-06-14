@@ -1,85 +1,71 @@
-
+import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:memories/models/user.dart';
-import 'package:memories/util/fire_helper.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:memories/view/my_widgets/constants.dart';
 
 
-class MessageHandler extends StatefulWidget {
-  @override
-  _MessageHandlerState createState() => _MessageHandlerState();
-}
+class MessageHandler{
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
-class _MessageHandlerState extends State<MessageHandler> {
-  final Firestore _db = Firestore.instance;
-  final FirebaseMessaging _fcm = FirebaseMessaging();
+  void registerNotification() {
+    firebaseMessaging.requestNotificationPermissions();
 
-  @override
-  void initState() {
+    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      print('onMessage: $message');
+      Platform.isAndroid
+          ? showNotification(message['notification'])
+          : showNotification(message['aps']['alert']);
+      return;
+    }, onResume: (Map<String, dynamic> message) {
+      print('onResume: $message');
+      return;
+    }, onLaunch: (Map<String, dynamic> message) {
+      print('onLaunch: $message');
+      return;
+    });
 
-    // implement request auth on ios
-    _fcm.configure(
-      onMessage: (Map<String, dynamic> message) async {
-        print("onMessage: $message");
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: ListTile(
-              title: Text(message['notification']['title']),
-              subtitle: Text(message['notification']['body']),
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Ok'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-        );
-      },
-      onLaunch: (Map<String, dynamic> message) async {
-        print("onLaunch: $message");
-        // TODO optional
-      },
-      onResume: (Map<String, dynamic> message) async {
-        print("onResume: $message");
-        // TODO optional
-      },
-    );
 
-  }
-
-  _saveDeviceToken() async {
-    // Get the current user
-    String uid = 'jeffd23';
-    // FirebaseUser user = await _auth.currentUser();
-
-    // Get the token for this device
-    String fcmToken = await _fcm.getToken();
-
-    // Save it to Firestore
-    if (fcmToken != null) {
-      var tokens = FireHelper().fire_user
+    firebaseMessaging.getToken().then((token) {
+      print('token: $token');
+      Firestore.instance
+          .collection('users')
           .document(me.uid)
-          .collection('tokens')
-          .document(fcmToken);
-
-      await tokens.setData({
-        'token': fcmToken,
-        'createdAt': FieldValue.serverTimestamp(), // optional
-        'platform': Platform.operatingSystem // optional
-      });
-    }
+          .updateData({'pushToken': token});
+    }).catchError((err) {
+      print(err);
+      //Fluttertoast.showToast(msg: err.message.toString());
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid ? 'fr.mencelt.memories' : 'fr.mencelt.memories',
+      'Memories',
+      'Voir description',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
   }
 
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
 }
-
