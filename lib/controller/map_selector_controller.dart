@@ -5,8 +5,9 @@ import 'package:latlong/latlong.dart';
 import 'package:mapbox_search_flutter/mapbox_search_flutter.dart';
 import 'package:memories/view/my_material.dart';
 
+///Ouvre la map entierement afin de selectionner un lieu/ une position
 class Map_Controller extends StatefulWidget {
-  Marker initMarker;
+  final Marker initMarker;
   Map_Controller(this.initMarker);
   _MapState createState() => _MapState();
 }
@@ -125,6 +126,7 @@ class _MapState extends State<Map_Controller> {
     );
   }
 
+  ///Affiche sur la carte un marker à l'endroit selectionné
   getTapLatLng(LatLng point) {
     if(mounted) {
       setState(() {
@@ -152,6 +154,7 @@ class _MapState extends State<Map_Controller> {
     }
   }
 
+  ///Recherche un lieu via input
   searchForPlace(MapBoxPlace input) async {
     LatLng point = LatLng(input.center[1], input.center[0]);
     getTapLatLng(point);
@@ -159,6 +162,7 @@ class _MapState extends State<Map_Controller> {
     hideKeyBoard();
   }
 
+  ///Gere le clic sur la carte
   tapForPlace(LatLng point){
     if(!_keyboardIsVisible()) {
       getTapLatLng(point);
@@ -169,6 +173,7 @@ class _MapState extends State<Map_Controller> {
 
   }
 
+  //cache le clavier
   void hideKeyBoard() {
     FocusScope.of(context).requestFocus(new FocusNode());
   }

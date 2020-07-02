@@ -1,30 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:memories/util/date_helper.dart';
 import 'package:memories/view/my_material.dart';
+
+///Model notification
 
 class Notif {
 
-  DocumentReference notifRef;
+  String id;
   String text;
-  String date;
-  String idFrom;
-  String idTo;
-  DocumentReference ref;
-  bool seen;
-  String type;
-  Timestamp time;
+  DateTime date;
+  String idFrom; //utilisateur qui envoie
+  String idTo; //utilisateur qui recoit
+  bool seen; // a été vue ?
+  String type; // like, follow , comment ...
+  String idRef;
 
-  Notif(DocumentSnapshot snap) {
-    notifRef = snap.reference;
-    Map<String, dynamic> map = snap.data;
+  Notif(Map<String, dynamic> snap) {
+    Map<String, dynamic> map = snap;
+    id = map[keyId];
     text = map[keyTextNotification];
-    date = DateHelper().myDate(map[keyDate].toDate());
-    time = map[keyDate];
+    date = DateTime.fromMillisecondsSinceEpoch(map[keyDate]);
     idFrom=map[keyIdFrom];
     idTo=map[keyIdTo];
-    ref = map[keyRef];
     seen = map[keySeen];
     type = map[keyType];
+    idRef = map['idRef'];
   }
 
 }

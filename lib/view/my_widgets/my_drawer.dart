@@ -36,7 +36,7 @@ class MyDrawer extends Drawer {
               ),
               ListTile(
                 leading: settingsIcon,
-                title: MyText("paramètres",color: black,),
+                title: MyText("Paramètres",color: black,),
                 onTap: (){
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => SettingsController(user)));
@@ -45,7 +45,7 @@ class MyDrawer extends Drawer {
               Divider(),
               ListTile(
                 leading: Icon(Icons.error),
-                title: MyText("plus d'info",color: black,),
+                title: MyText("Plus d'infos",color: black,),
                 onTap: (){
                   showAboutDialog(context: context,
                     applicationName: "Memories",
@@ -59,7 +59,7 @@ class MyDrawer extends Drawer {
                 leading: Icon(Icons.arrow_back),
                 title: MyText("Se deconnecter", color: Colors.red,),
                 onTap: (){
-                  AlertHelper().logOut(context, "Se déconnecter", "Voulez-vous vraiment vous déconnectez ?");
+                  AlertHelper().logOut(context, "Se deconnecter", "Voulez-vous vraiment vous deconnecter ?");
                 },
               )
 

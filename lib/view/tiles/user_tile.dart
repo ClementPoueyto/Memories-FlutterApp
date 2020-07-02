@@ -1,16 +1,30 @@
 import 'package:memories/controller/user_controller.dart';
 import 'package:memories/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/profile_page.dart';
-class UserTile extends StatelessWidget{
-  
+class UserTile extends StatefulWidget{
   User user;
-  UserTile(this.user);
+  Function notifyParent;
+  UserTile(this.user,this.notifyParent);
 
+  UserTileState createState() => UserTileState();
+
+}
+
+class UserTileState extends State<UserTile>{
+  User user;
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    user=widget.user;
+  }
   @override
   Widget build(BuildContext context) {
+
     return InkWell(
       onTap: (){
         Navigator.push(context, MaterialPageRoute(
@@ -40,7 +54,9 @@ class UserTile extends StatelessWidget{
                       widget:Text("${user.firstName} ${user.lastName}"),),
                   ],
                 ),
-                MyButton(color: me.following.contains(user.uid)? Colors.red:Colors.white,name :me.following.contains(user.uid)?"Se désabonner":"Suivre",borderColor: black,textColor:me.following.contains(user.uid)?white:black ,function: (){FireHelper().addFollow(user);},),
+                MyButton(color: me.following.contains(user.uid)? Colors.red:Colors.white,name :me.following.contains(user.uid)?"Se désabonner":"Suivre",borderColor: black,textColor:me.following.contains(user.uid)?white:black ,
+                  function: (){ update();
+                  },),
               ],
             ),
           ),
@@ -48,5 +64,10 @@ class UserTile extends StatelessWidget{
       ),
     );
   }
-  
+
+  update()async{
+     User updated =await ApiUserHelper().follow(user.uid);
+    me=updated;
+     widget.notifyParent();
+  }
 }

@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:memories/controller/add_post_controller.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
-import 'package:memories/util/fire_helper.dart';
+import 'package:memories/util/api_post_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/detail_post_page.dart';
 
+///Affiche un post entierement sur une page avec la liste des commentaires
 class DetailPost extends StatelessWidget {
-  User user;
-  Post post;
+  final User user;
+  final Post post;
   final _formKey = GlobalKey<FormState>();
-
-  DetailPost(this.post, this.user);
+  final ValueNotifier<List<Post>> notifierPosts;
+  DetailPost(this.post, this.user,this.notifierPosts);
 
   @override
   Widget build(BuildContext context) {
+
     TextEditingController controller = TextEditingController();
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +26,7 @@ class DetailPost extends StatelessWidget {
               icon: editIcon,
               function: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => AddPost(post)));
+                    MaterialPageRoute(builder: (context) => AddPost(post,this.notifierPosts)));
               },
             )
         ],
@@ -99,6 +101,7 @@ class DetailPost extends StatelessWidget {
     );
   }
 
+  ///Valide le commentaire
   String validatorComment(value) {
     if (value.length > 100) {
       return "100 caractères maximum";
@@ -106,10 +109,16 @@ class DetailPost extends StatelessWidget {
     return null;
   }
 
+  ///Envoie le commentaire via appel api
   sendComment(BuildContext context, TextEditingController controller) {
     FocusScope.of(context).requestFocus(FocusNode());
     if (controller.text != null && controller.text != "") {
-      FireHelper().addComment(post.ref, controller.text, post.userId);
+      Map<String, dynamic> map = {
+        keyUid: me.uid,
+        keyTextComment: controller.text,
+        keyDate: DateTime.now().millisecondsSinceEpoch,
+      };
+      ApiPostHelper().addComment(map, post.id);
     }
   }
 }

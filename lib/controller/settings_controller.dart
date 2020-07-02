@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:memories/models/user.dart';
-import 'package:memories/util/fire_helper.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 
+///Modification des parametres du compte
 class SettingsController extends StatefulWidget {
   final User user;
   SettingsController(this.user);
@@ -93,8 +94,12 @@ class SettingsState extends State<SettingsController> {
           MyButton(
             function: () {
               Map<String, dynamic> data = {keyIsPrivate: isAccountPrivate};
+              setState(() {
+                me.isPrivate=isAccountPrivate;
+                ApiUserHelper().updateProfile(data);
+              });
               Navigator.pop(context);
-              FireHelper().modifiyUser(data);
+
             },
             name: "Valider",
             color: base,

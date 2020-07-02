@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/post.dart';
+import 'package:memories/util/api_post_helper.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/fire_helper.dart';
@@ -24,12 +26,13 @@ class _ProfileState extends State<ProfilePage> {
   var _pages;
   var _pageController = PageController();
   File imageTaken;
+  StreamSubscription postsSubscription;
 
-  ScrollController controller;
+  ScrollController scrollController;
 
   Map<String, List<Post>> list=Map();
-  StreamSubscription subscription;
   List<DocumentSnapshot> documents;
+  Future<List<Post>> userPosts;
 
   @override
   Widget build(BuildContext context) {
@@ -59,15 +62,37 @@ class _ProfileState extends State<ProfilePage> {
 
         Expanded(
 
-            child: StreamBuilder<QuerySnapshot>(
-                stream: _isme?FireHelper().myPostsFrom(me.uid):FireHelper().postsFrom(widget.user.uid),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
+            child: FutureBuilder(
+                future: userPosts,
+                builder: (BuildContext context, snapshot) {
                   if (!snapshot.hasData) {
-                    return LoadingCenter();
+
+                    if(_isme&&myListPosts!=null&&myListPosts.length!=0){
+                      sortPosts(myListPosts);
+                      _pages = [
+                        ProfilePostsPage(
+                            this._isme, widget.user, documents, this.list),
+                        //ProfileTagsPage(),
+
+                      ];
+                      return Container(
+                        height: MediaQuery.of(context).size.height,
+                        child :PageView(
+                          controller: _pageController,
+                          onPageChanged: (index) {
+                            setState(() {
+                              this.index = index;
+                            });
+                          },
+                          children:
+                          _pages != null ? _pages : <Widget>[LoadingCenter()],
+                        ),);
+                    }
+                    else{
+                      return LoadingCenter();
+                    }
                   } else {
-                    documents = snapshot.data.documents;
-                    sortPosts(documents);
+                    sortPosts(snapshot.data);
 
                     if(_isme){
                       _pages = [
@@ -114,13 +139,21 @@ class _ProfileState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _isme = (widget.user.uid == me.uid);
-    controller = ScrollController();
+    scrollController = ScrollController();
+    if(_isme) {
+      ApiPostHelper().getMyPosts().then((value) =>
+      postController.add(value));
+      postsSubscription =mePosts.listen((event) {
+        myListPosts = event;
+        userPosts = Future.value(event);
+        setState(() {
 
-    subscription=FireHelper().fire_user.document(widget.user.uid).snapshots().listen((data) {
-      setState(() {
-        widget.user=User(data);
+        });
       });
-    });
+    }
+    else{
+      userPosts = ApiPostHelper().getPostFromId(widget.user.uid);
+    }
 
   }
 
@@ -129,10 +162,13 @@ class _ProfileState extends State<ProfilePage> {
     if (_pageController != null) {
       _pageController.dispose();
     }
-    if (controller != null) {
-      controller.dispose();
+    if (scrollController != null) {
+      scrollController.dispose();
     }
-    subscription.cancel();
+    if(postsSubscription != null){
+      postsSubscription.cancel();
+    }
+
     super.dispose();
   }
 
@@ -144,20 +180,20 @@ class _ProfileState extends State<ProfilePage> {
     });
   }
 
-  void sortPosts(List<DocumentSnapshot> docs){
+  void sortPosts(List<Post> posts){
     this.list=Map();
-    docs.sort((a,b) {
-      DateTime adate = a.data[keyDate].toDate();
-      DateTime bdate = b.data[keyDate].toDate();
+    posts.sort((a,b) {
+      DateTime adate =  a.date;
+      DateTime bdate = b.date;
       return bdate.compareTo(adate);
     });
-    for(DocumentSnapshot doc in docs){
-      DateTime date = doc.data[keyDate].toDate();
+    for(Post post in posts){
+      DateTime date = post.date;
       String keyMapDate= date.month.toString()+"/"+date.year.toString();
       if(this.list[keyMapDate]==null){
         this.list[keyMapDate]=[];
       }
-      this.list[keyMapDate].add(Post(doc));
+      this.list[keyMapDate].add(post);
 
     }
   }

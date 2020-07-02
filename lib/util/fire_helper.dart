@@ -6,10 +6,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/alert_helper.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/date_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+
+///DEPRECIATED
+///A ne plus utiliser car, plus de firebase
 class FireHelper{
 
   final auth_instance = FirebaseAuth.instance;
@@ -150,12 +154,13 @@ class FireHelper{
     fire_user.document(me.uid).updateData(data);
   }
 
-  modifyPicture(File file){
+  modifyPicture(File file)async {
     StorageReference ref = storage_user.child(me.uid);
-    addImage(file, ref).then((finalised) {
+
+    var finalised = await addImage(file, ref);
       Map<String, dynamic> data = {keyImageURL: finalised};
-      modifiyUser(data);
-    });
+      return await ApiUserHelper().updateProfile(data);
+
   }
 
   addLike(Post post){

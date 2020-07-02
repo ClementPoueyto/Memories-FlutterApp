@@ -1,35 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:memories/view/my_material.dart';
+
+///Model d'un utilisateur
 
 class User {
   String uid;
   String firstName;
   String lastName;
-  String fullName;
-  String imageUrl;
+  String fullName; // firstname + lastname
+  String imageUrl; //url stockage image de profile
   String pseudo;
   bool isPrivate;
-  List<dynamic> followers;
-  List<dynamic> following;
-  List<dynamic> posts;
-  DocumentReference ref;
-  String documentId;
+  List<String> followers; // abonnés
+  List<String> following; //abonnements
+  DocumentReference ref; // deprecated
+  String documentId; //deprecated
 
-  User(DocumentSnapshot snapshot){
-    ref= snapshot.reference;
-    documentId = snapshot.documentID;
-    Map<String, dynamic> map = snapshot.data;
-    uid = map[keyUid];
+  User(Map<String, dynamic> map){
+    uid = map[keyId];
     isPrivate = map[keyIsPrivate];
     firstName = map[keyFirstName];
     lastName= map[keyLastName];
     fullName=map[keyFullName];
-    following = map[keyFollowing];
-    followers= map[keyFollowers];
+    following = List<String>.from(map[keyFollowing]);
+    followers= List<String>.from(map[keyFollowers]);
     pseudo= map[keyPseudo];
     imageUrl = map[keyImageURL];
-    posts = map[keyPost];
   }
 
   Map<String, dynamic> toMap(){
@@ -42,7 +38,6 @@ class User {
       keyFollowing  :following,
       keyPseudo : pseudo,
       keyFollowers : followers,
-      keyPost : posts,
       keyIsPrivate : isPrivate,
     };
   }

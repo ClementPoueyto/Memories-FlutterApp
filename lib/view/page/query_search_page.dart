@@ -4,6 +4,7 @@ import 'package:memories/models/user.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/user_tile.dart';
+import 'package:memories/util/api_user_helper.dart';
 
 class QuerySearchPage extends StatefulWidget {
   QuerySearchState createState() => QuerySearchState();
@@ -81,17 +82,12 @@ class QuerySearchState extends State<QuerySearchPage> {
                       ),
                     ),
                   )
-                : StreamBuilder<QuerySnapshot>(
-                    stream: FireHelper()
-                        .fire_user
-                        .where(keyPseudo,
-                            isEqualTo: myFilter.toLowerCase().trim())
-                        .limit(20)
-                        .snapshots(),
+                : FutureBuilder(
+                    future: ApiUserHelper().searchUser(myFilter.toLowerCase().trim()),
                     builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                        snapshot) {
                       if (snapshot.hasData) {
-                        if (snapshot.data.documents.length == 0) {
+                        if (snapshot.data.length == 0) {
                           return Center(
                             child: MyText(
                               "Aucun utilisateur",
@@ -101,7 +97,7 @@ class QuerySearchState extends State<QuerySearchPage> {
                           );
                         }
                         List<User> myquery = [];
-                        snapshot.data.documents.forEach(
+                        snapshot.data.forEach(
                           (u) {
                             User user = User(u);
                             myquery.add(user);
@@ -112,7 +108,9 @@ class QuerySearchState extends State<QuerySearchPage> {
                           itemBuilder: (BuildContext ctx, int index) {
                             User user = myquery[index];
                             if (user.uid != me.uid) {
-                              return UserTile(user);
+                              return UserTile(user, (){
+                                setState(() {
+                              });});
                             } else {
                               return SizedBox.shrink();
                             }

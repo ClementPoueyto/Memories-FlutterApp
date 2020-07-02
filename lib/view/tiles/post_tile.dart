@@ -4,6 +4,7 @@ import 'package:memories/controller/detail_post_controller.dart';
 import 'package:memories/controller/user_controller.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/models/post.dart';
+import 'package:memories/util/api_post_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/util/date_helper.dart';
 
@@ -13,8 +14,9 @@ class PostTile extends StatelessWidget{
   final Post post;
   final User user;
   final bool detail;
-
-  PostTile({@required Post this.post, @required User this.user, bool this.detail : false});
+  Function notifyParent;
+  final ValueNotifier<List<Post>> notifierPosts;
+  PostTile({@required Post this.post, @required User this.user, bool this.detail : false,Function this.notifyParent, ValueNotifier<List<Post>> this.notifierPosts});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,7 @@ class PostTile extends StatelessWidget{
                   Expanded(child: SizedBox(),),
                   PaddingWith(
                     right: 15,
-                      widget :MyText(post.date.hour.toString()+":"+post.date.minute.toString(),color: black,))
+                      widget :MyText(DateHelper().getTime(post.date),color: black,))
               ],
               ),),
                     ClipRRect(
@@ -107,13 +109,15 @@ class PostTile extends StatelessWidget{
                       Row(
                         children: <Widget>[
                           MyIconButton(function: (){
-                            FireHelper().addLike(post);},icon: post.likes.contains(me.uid)?likeIconFull:likeIcon,),
+                            ApiPostHelper().likePost(post.id);
+                            update();
+                            },icon: post.likes.contains(me.uid)?likeIconFull:likeIcon,),
                           Text(post.likes.length.toString()),
                         ],
                       ),
                       Row(
                         children: <Widget>[
-                          MyIconButton(function: (){if(detail==true){Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,user)));}},icon: commentsIcon,),
+                          MyIconButton(function: (){if(detail==true){Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,user,this.notifierPosts)));}},icon: commentsIcon,),
                           Text(post.comments.length.toString()),
                         ],
                       ),
@@ -127,6 +131,8 @@ class PostTile extends StatelessWidget{
     );
   }
 
-
+  update()async{
+    notifyParent(post.id);
+  }
 
 }

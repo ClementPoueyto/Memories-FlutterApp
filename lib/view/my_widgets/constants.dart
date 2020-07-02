@@ -1,8 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:memories/models/notification.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 //ME
 User me;
+
+//POSTS
+StreamController<List<Post>> postController = StreamController<List<Post>>.broadcast();
+Stream<List<Post>> mePosts = postController.stream;
+List<Post> myListPosts = List();
+
+//NOTIFS
+StreamController<List<Notif>> notifsController =StreamController<List<Notif>>.broadcast();
+Stream<List<Notif>> meNotifs = notifsController.stream;
+List<Notif> notifsList = List();
+List<User> userNotif = List();
+
+//FEED
+List<Post> myFeedPost=List();
+List<User> myFeedUser=List();
+
 //colors
 const Color white = const Color(0xFFFFFFFF);
 const Color whiteShadow = const Color(0xFFF5F5F5);
@@ -14,6 +34,9 @@ const Color accent = const Color(0xFF00C853);
 
 const double maxWidthImagePost= 1080.0;
 const double maxHeightImagePost=1350.0;
+
+//String urlApi ="https://memories.osc-fr1.scalingo.io/api/";
+String urlApi ="http://192.168.1.69:9428/api/";
 
 //keys
 String keyFirstName = "firstName";
@@ -34,7 +57,7 @@ String keyIsPrivate= "isPrivate";
 String keyAdress="adress";
 String keyTextComment ="textComment";
 String keyTextNotification = "textNotification";
-String keyType ="type";
+String keyType ="types";
 String keyRef = "ref";
 String keySeen = "seen";
 String keyDay="day";
@@ -44,6 +67,10 @@ String keyFullName="fullName";
 String keyPseudo="pseudo";
 String keyIdFrom="idFrom";
 String keyIdTo = "idTo";
+String keyId = "_id";
+String keyEmail = "email";
+String keyToken = "token";
+String keyAdmin = "isAdmin";
 //Icons
 
 Icon homeIcon = Icon(Icons.home);
@@ -94,3 +121,4 @@ Position initializedPosition = Position(latitude: 0,longitude: 0);
 
 AssetImage searchImage = AssetImage("assets/image/glass.png");
 
+String clientToken;

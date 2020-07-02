@@ -22,7 +22,7 @@ class ProfilePostTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => DetailPost(post, user)));
+            MaterialPageRoute(builder: (context) => DetailPost(post, user,null)));
       },
       child: Card(
         elevation: 7,

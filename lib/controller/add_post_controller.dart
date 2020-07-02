@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -9,19 +9,21 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:memories/controller/map_selector_controller.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/util/alert_helper.dart';
+import 'package:memories/util/api_post_helper.dart';
 import 'package:memories/util/date_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/util/map_helper.dart';
 import 'package:memories/view/my_material.dart';
-import 'package:memories/models/user.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:latlong/latlong.dart';
 
+/// Controller Ajout d'une publication (post)
 class AddPost extends StatefulWidget {
-  Post post;
-  AddPost(this.post);
+  final Post post;
+  final ValueNotifier<List<Post>> notifierPosts;
+
+  AddPost(this.post,this.notifierPosts);
   _AddPostState createState() => _AddPostState();
 }
 
@@ -47,7 +49,8 @@ class _AddPostState extends State<AddPost> {
     _title = TextEditingController();
     _description = TextEditingController();
     _adress = TextEditingController();
-    _userPosition =  Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+    _userPosition = Geolocator()
+        .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
 
     if (widget.post != null) {
       post = widget.post;
@@ -59,23 +62,22 @@ class _AddPostState extends State<AddPost> {
       _adress.text = post.adress;
       _userPosition = Future.value(post.position);
       positionToSend = post.position;
-
     } else {
       _userPosition = MapHelper().getPosition();
     }
     _userPosition.then((value) => {
-      if(value!=null){
-        initializedPosition = value,
-        positionToSend = value,
-        adressPlacemark = Geolocator()
-            .placemarkFromCoordinates(value.latitude, value.longitude),
-        adressPlacemark.then((adress) =>
-        {
-
-          _adress.text = getStringAdress(adress),
-        }),
-        mapController.onReady.then((controller) => {moveCameraTo(positionToSend)})
-      }
+          if (value != null)
+            {
+              initializedPosition = value,
+              positionToSend = value,
+              adressPlacemark = Geolocator()
+                  .placemarkFromCoordinates(value.latitude, value.longitude),
+              adressPlacemark.then((adress) => {
+                    if (mounted) _adress.text = getStringAdress(adress),
+                  }),
+              mapController.onReady
+                  .then((controller) => {moveCameraTo(positionToSend)})
+            }
         });
   }
 
@@ -94,13 +96,21 @@ class _AddPostState extends State<AddPost> {
       appBar: AppBar(
         title: Text("Ajouter un post"),
         actions: <Widget>[
-          if(post!=null)
+          if (post != null)
             MyIconButton(
-            icon: closeIcon,
-            function: (){AlertHelper().delete(
-                context,
-                post.documentId,DateHelper().myDate(post.date) ,"Voulez-vous vraiment supprimer cette publication ?", "Les données associées seront perdues");},
-          )
+              icon: closeIcon,
+              function: () {
+                AlertHelper().delete(
+                    context,
+                    widget.notifierPosts,
+                    post.id,
+                    post.imageUrl != null && post.imageUrl != ""
+                        ? DateHelper().myDate(post.date)
+                        : "",
+                    "Voulez-vous vraiment supprimer cette publication ?",
+                    "Les données associées seront perdues");
+              },
+            )
         ],
       ),
       body: GestureDetector(
@@ -179,7 +189,8 @@ class _AddPostState extends State<AddPost> {
                             height: 75.0,
                             child: (post != null &&
                                     imageTaken == null &&
-                                    imageUrl != null&&imageUrl!="")
+                                    imageUrl != null &&
+                                    imageUrl != "")
                                 ? Row(children: <Widget>[
                                     Image(
                                         image: CachedNetworkImageProvider(
@@ -231,13 +242,14 @@ class _AddPostState extends State<AddPost> {
                             MyMap(
                               mapController: mapController,
                               isInteractive: false,
-                              initialPosition: LatLng(initializedPosition.latitude,initializedPosition.longitude),
+                              initialPosition: LatLng(
+                                  initializedPosition.latitude,
+                                  initializedPosition.longitude),
                               zoom: 10,
                               minZoom: 3,
                               maxZoom: 18,
                               markers: markersList,
                             ),
-
                             Positioned(
                               child: PaddingWith(
                                   right: 15,
@@ -328,10 +340,13 @@ class _AddPostState extends State<AddPost> {
                         textColor: white,
                         color: base,
                         borderColor: accent,
-                        name: post!=null?"Modifier":'Publier',
-                        function: () {
+                        name: post != null ? "Modifier" : 'Publier',
+                        function: ()async {
                           if (_formKey.currentState.validate()) {
-                            sendToFirebase();
+                            Post sentPost =await sendToDatabase();
+                            notifyMainController(sentPost);
+                            Navigator.of(context)
+                                .popUntil((route) => route.isFirst);
                           }
                         },
                       ),
@@ -346,10 +361,12 @@ class _AddPostState extends State<AddPost> {
     );
   }
 
+  ///Range le clavier
   void hideKeyBoard() {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
 
+  ///déplace la camera de carte à une position donnée
   moveCameraTo(Position position) {
     mapController.move(LatLng(position.latitude, position.longitude), 12);
     addMarker(
@@ -357,6 +374,7 @@ class _AddPostState extends State<AddPost> {
     updateMarkers(markersList);
   }
 
+  ///Verifie le titre de la publication
   String validatorPost(value) {
     if (value.isEmpty) {
       return 'Merci de remplir ce champ';
@@ -367,6 +385,7 @@ class _AddPostState extends State<AddPost> {
     return null;
   }
 
+  ///Verifie la description de la publication
   String validatorDesc(value) {
     if (value.length > 500) {
       return "500 caractères maximum";
@@ -374,12 +393,16 @@ class _AddPostState extends State<AddPost> {
     return null;
   }
 
-  String validatorAdress(value){
-    if(value.length>100){
+  ///Verifie l'adresse de la publication
+  String validatorAdress(value) {
+    if (value.length > 100) {
       return "100 caractères maximum";
     }
+    return null;
   }
 
+  /// Gere l'ajout de photo via une source (caméra ou gallerie)
+  /// puis redirige vers le crop d'image
   Future<void> takePicture(ImageSource source) async {
     File image = await ImagePicker.pickImage(
         source: source,
@@ -412,6 +435,7 @@ class _AddPostState extends State<AddPost> {
   }
 
   // Navigator.pop.
+  ///Prend en compte la nouvelle position selectionnée par l'utilisateur et modifie l'adresse
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that completes after calling
     // Navigator.pop on the Selection Screen.
@@ -426,12 +450,19 @@ class _AddPostState extends State<AddPost> {
             {
               setState(() {
                 positionToSend = value;
-                adressPlacemark = Geolocator().placemarkFromCoordinates(
-                    positionToSend.latitude, positionToSend.longitude).catchError((e){print(e);});
-                adressPlacemark.then((adress) => {
-
-                  _adress.text= getStringAdress(adress),
-                    }).catchError((e){print(e);});
+                adressPlacemark = Geolocator()
+                    .placemarkFromCoordinates(
+                        positionToSend.latitude, positionToSend.longitude)
+                    .catchError((e) {
+                  print(e);
+                });
+                adressPlacemark
+                    .then((adress) => {
+                          _adress.text = getStringAdress(adress),
+                        })
+                    .catchError((e) {
+                  print(e);
+                });
                 _userPosition = Future(() {
                   return positionToSend;
                 });
@@ -445,93 +476,179 @@ class _AddPostState extends State<AddPost> {
         });
   }
 
-  sendToFirebase()async {
+  ///Verifie si l'utilisateur a deja publié aujourd'hui
+  bool checkAlreadyPublished(DateTime datePost) {
+    for (post in myListPosts) {
+      if (DateHelper().isTheSameDay(post.date, datePost)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  ///Envoie les donnée à la base de donnée
+  Future<Post> sendToDatabase() async {
+    Future<Post> send;
     hideKeyBoard();
+    //si le post n'est pas vide
     if (_title.text != null && _title.text != "") {
-      if (post == null) {
-        FireHelper().addpost(context,me.uid, _title.text, _description.text,
-            positionToSend, _adress.text, imageTaken, private);
-      } else {
-        FireHelper().modifyPost(
-          post.documentId,
-            me.uid,
-            _title.text,
-            _description.text,
-            positionToSend,
-            _adress.text,
-            imageTaken,
-            imageUrl,
-            private,
-            post.date,
-            post.likes,
-            post.comments).whenComplete(() => Fluttertoast.showToast(
-            msg: "Modifié avec succès",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            fontSize: 16.0
-        )).catchError((err)=>
-            Fluttertoast.showToast(
-                msg: "erreur : "+err.toString(),
+      Map<String, dynamic> futurePost = await addpost(
+          context,
+          me.uid,
+          _title.text,
+          _description.text,
+          positionToSend,
+          _adress.text,
+          imageTaken,
+          private,
+          post != null
+              ? post.date.millisecondsSinceEpoch
+              : DateTime.now().millisecondsSinceEpoch);
+
+
+      if (post == null) { //si création de post
+        if (checkAlreadyPublished(  // verifie si deja publié
+            DateTime.fromMillisecondsSinceEpoch(futurePost[keyDate]))) {
+           AlertHelper().overwrite(
+              context, "erreur", "Vous avez deja posté", Map(), "ok");
+        }
+        send= ApiPostHelper().postMyPost(context, futurePost);
+      }
+      else {
+        send = ApiPostHelper()
+            .updateMyPost(context, futurePost, post.id);
+        send
+            .whenComplete(() => Fluttertoast.showToast(
+                msg: "Modifié avec succès",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
-                fontSize: 16.0
-            ));
-          Navigator.of(context).popUntil((route) =>
-          route.isFirst);
+                fontSize: 16.0))
+            .catchError((err) => Fluttertoast.showToast(
+                msg: "erreur : " + err.toString(),
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                fontSize: 16.0));
       }
-
+      return send;
     }
-
   }
 
   void addMarker(Position position) {
     this.markersList = [newMarker(position)];
   }
 
+  ///Ajoute un marker sur la carte en fonction de la position
   Marker newMarker(Position position) {
-    return
-      Marker(
-        width: 85.0,
-        height: 85.0,
-        point: new LatLng(position.latitude, position.longitude),
-        builder: (context) => Container(
-          child :Column(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.location_on),
-                color: Colors.blue,
-                iconSize: 40.0,
-                onPressed: () {},
-              ),
-              SizedBox(height: 25,),
-
-            ],
-          ),
+    return Marker(
+      width: 85.0,
+      height: 85.0,
+      point: new LatLng(position.latitude, position.longitude),
+      builder: (context) => Container(
+        child: Column(
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.location_on),
+              color: Colors.blue,
+              iconSize: 40.0,
+              onPressed: () {},
+            ),
+            SizedBox(
+              height: 25,
+            ),
+          ],
         ),
-      );
-
+      ),
+    );
   }
 
+  ///Met à jour la liste des markers
   updateMarkers(List<Marker> update) {
     if (mounted)
       setState(() {
         this.markersList = update;
       });
   }
-  
-  getStringAdress(List<Placemark> adress){
-    String res="";
-    if(adress.first.locality!=null&&adress.first.locality!=""){
-      res+=adress.first.locality;
-      if((adress.first.country!=null&&adress.first.country!="")){
-        res+=", ";
+
+  ///Transforme l'objet Adresse (placemark) en adresse String lisible
+  //TODO
+  getStringAdress(List<Placemark> adress) {
+    String res = "";
+    if (adress.first.locality != null && adress.first.locality != "") {
+      res += adress.first.locality;
+      if ((adress.first.country != null && adress.first.country != "")) {
+        res += ", ";
       }
     }
-    if(adress.first.country!=null&&adress.first.country!=""){
-      res+=adress.first.country;
+    if (adress.first.country != null && adress.first.country != "") {
+      res += adress.first.country;
     }
     return res;
+  }
+
+  ///Crée un post via json
+  Future<Map<String, dynamic>> addpost(
+      BuildContext context,
+      String uid,
+      String title,
+      String description,
+      Position position,
+      String adress,
+      File file,
+      bool private,
+      int date) async {
+    List<dynamic> likes = [];
+    List<dynamic> comments = [];
+    Map<String, dynamic> map = {
+      keyUid: uid,
+      keyTitle: title,
+      keyLikes: likes,
+      keyComments: comments,
+      keyDate: date,
+      keyIsPrivate: private,
+    };
+    if (description != null && description != "") {
+      map[keyDescription] = description;
+    }
+    if (position != null && position != "") {
+      map[keyPosition] = {
+        "latitude": position.latitude,
+        "longitude": position.longitude
+      };
+    }
+    if (adress != null && adress != "") {
+      map[keyAdress] = adress;
+    }
+    if (file != null) {
+      StorageReference ref = FireHelper().storage_posts.child(uid).child(
+          DateHelper().myDate(DateTime.fromMillisecondsSinceEpoch(date)));
+      final finalised = await FireHelper().addImage(file, ref);
+      map[keyImageURL] = finalised;
+      return map;
+    } else if (file == null && (imageUrl == null || imageUrl == "")) {
+      if (post != null) {
+        /*FireHelper()
+            .storage_posts
+            .child(me.uid)
+            .child(DateHelper().myDate(post.date))
+            .delete();*/
+      }
+      map[keyImageURL] = "";
+      return Future.value(map);
+    } else {
+      return Future.value(map);
+    }
+  }
+  notifyMainController(Post newPost){
+    List<Post> posts =widget.notifierPosts.value;
+
+    if(post!=null) {
+      posts.removeWhere((element) => element.id==newPost.id);
+    }
+    posts.add(newPost);
+    widget.notifierPosts.value=posts;
+    widget.notifierPosts.notifyListeners();
+
   }
 }

@@ -1,15 +1,14 @@
 import 'dart:async';
-
 import 'package:clip_shadow/clip_shadow.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/util/alert_helper.dart';
 import 'package:memories/view/ui/my_clipper.dart';
 import 'package:memories/view/ui/my_second_clipper.dart';
 
+/// Page d'enregistrement du compte
 class RegisterController extends StatefulWidget {
   _RegisterState createState() => _RegisterState();
 }
@@ -242,27 +241,18 @@ class _RegisterState extends State<RegisterController> {
         _lastName.text != "" &&
         _pseudo.text != null &&
         _pseudo.text != "") {
-      Future<bool> isPseudoTaken = checkUser(_pseudo.text);
-      isPseudoTaken.then(
-        (bool) => {
-          if (bool == true)
-            {
-              FireHelper()
-                  .createAccount(_mail.text, _pwd.text, _firstName.text,
-                      _lastName.text, _pseudo.text.toLowerCase(), context)
-                  .then(
-                    (value) => {
-                      if (value.uid != null) {Navigator.pop(context)}
-                    },
-                  ),
-            }
-          else
-            {
-              AlertHelper().error(context, "Mauvais Pseudo",
-                  "Désolé, ce pseudo a déjà été pris")
-            },
-        },
-      );
+      ApiUserHelper()
+          .signIn(_mail.text.trim(), _pwd.text, _firstName.text, _lastName.text,
+              _pseudo.text, context)
+          .then((value) => {
+                if (value != null)
+                  {Navigator.pop(context)}
+                else
+                  {
+                    AlertHelper().error(context, "Mauvais Pseudo",
+                        "Désolé, ce pseudo a déjà été pris")
+                  }
+              });
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:memories/view/my_material.dart';
 import 'package:memories/view/ui/my_clipper.dart';
 import 'package:memories/view/ui/my_second_clipper.dart';
 
+///Page d'accueil de l'application
 class LogController extends StatefulWidget {
   _LogState createState() => _LogState();
 }
@@ -78,7 +79,7 @@ class _LogState extends State<LogController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               PaddingWith(
-                bottom:20,
+                bottom: 20,
                 widget: Hero(
                   tag: "loginButton",
                   child: SizedBox(
@@ -104,7 +105,7 @@ class _LogState extends State<LogController> {
                 widget: Hero(
                   tag: "registerButton",
                   child: SizedBox(
-                    height: 40,
+                      height: 40,
                       width: MediaQuery.of(context).size.width / 2,
                       child: MyButton(
                         name: "Créer un compte",

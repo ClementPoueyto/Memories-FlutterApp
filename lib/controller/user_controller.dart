@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:memories/controller/log_in_controller.dart';
-import 'package:memories/controller/register_controller.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/profile_page.dart';
 
+///Affiche le profil d'un utilisateur donné
 class UserController extends StatefulWidget {
   final User user;
   UserController(this.user);

@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/view/my_material.dart';
-import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_widgets/loadingCenter.dart';
 import 'package:memories/view/page/followers_search_page.dart';
 import 'package:memories/view/page/following_search_page.dart';

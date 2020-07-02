@@ -37,7 +37,7 @@ class _ProfileMapState extends State<ProfileMapPage> {
     keyMonths = listPostsToDisplay.keys.toList();
     index = keyMonths
         .indexOf(currentMonth.toString() + "/" + currentYear.toString());
-    if (index == null) {
+    if (index ==-1) {
       index = 0;
     }
 
@@ -68,6 +68,7 @@ class _ProfileMapState extends State<ProfileMapPage> {
       )),
       body: Stack(
         children: <Widget>[
+
           Container(
               height: MediaQuery.of(context).size.height,
               child:
@@ -119,8 +120,7 @@ class _ProfileMapState extends State<ProfileMapPage> {
                         },
                       ),
                       Text(DateHelper().getValue(Months.values[
-                              int.parse(keyMonths[index].split("/").first) -
-                                  1]) +
+                              int.parse(keyMonths[index].split("/").first)-1]) +
                           " " +
                           keyMonths[index].split("/").last),
                       MyIconButton(
@@ -222,7 +222,7 @@ class _ProfileMapState extends State<ProfileMapPage> {
                   color: Colors.blue,
                   iconSize: 40.0,
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,widget.user)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,widget.user,null)));
                   },
                 ),
                 SizedBox(height: 25,),

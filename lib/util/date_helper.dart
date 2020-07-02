@@ -2,9 +2,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:memories/view/my_material.dart';
 
-class DateHelper{
-
-  String myDate(DateTime timestamp){
+///Permet de manipuler les dates à partir d'un Timestamp ou DateTime
+class DateHelper {
+  ///Renvoie day month
+  String myDate(DateTime timestamp) {
     initializeDateFormatting();
 
     DateFormat format;
@@ -13,30 +14,36 @@ class DateHelper{
     return format.format(timestamp).toString();
   }
 
-  bool isTheSameDay(DateTime date1, DateTime date2){
-    if(date1.day==date2.day&&date1.month==date2.month&&date1.year==date2.year){
+  ///verifie si les deux dates proviennent du meme jour
+  bool isTheSameDay(DateTime date1, DateTime date2) {
+    if (date1.day == date2.day &&
+        date1.month == date2.month &&
+        date1.year == date2.year) {
       return true;
     }
     return false;
   }
 
-  bool isToday(DateTime date){
-    DateTime today= DateTime.now();
-    if(date.day==today.day&&date.year==today.year){
+  ///Verifie si la date est d'aujourd'hui
+  bool isToday(DateTime date) {
+    DateTime today = DateTime.now();
+    if (date.day == today.day && date.year == today.year) {
       return true;
-    }
-    else{
+    } else {
       return false;
     }
   }
 
-  String differenceDate(DateTime date){
+  ///non utilisé
+  String differenceDate(DateTime date) {
     DateTime today = DateTime.now();
-    Duration dif =today.difference(date);
+    Duration dif = today.difference(date);
+    return dif.toString();
   }
 
-  String getValue(Months months){
-    switch(months){
+  /// enumeration des mois de l'année
+  String getValue(Months months) {
+    switch (months) {
       case Months.january:
         return "Janvier";
       case Months.february:
@@ -66,6 +73,7 @@ class DateHelper{
     }
   }
 
+  ///enumeration des jours de la semaine
   String getWeekDay(int day) {
     switch (day) {
       case 1:
@@ -87,4 +95,16 @@ class DateHelper{
     }
   }
 
+  ///Renvoie min : h
+  String getTime(DateTime date) {
+    String res = "";
+    res += date.hour.toString().length > 1
+        ? date.hour.toString()
+        : "0" + date.hour.toString();
+    res += " : ";
+    res += date.minute.toString().length > 1
+        ? date.minute.toString()
+        : "0" + date.minute.toString();
+    return res;
+  }
 }

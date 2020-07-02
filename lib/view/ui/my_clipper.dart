@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+///Element de décoration accueil Memories Page
 class PrimaryClipper extends CustomClipper<Path> {
   @override
   getClip(Size size) {

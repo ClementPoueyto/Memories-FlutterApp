@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/user.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/user_tile.dart';
@@ -14,13 +15,13 @@ class FollowingSearchPage extends StatefulWidget {
 class FollowingSearchState extends State<FollowingSearchPage> {
   TextEditingController search;
   String myFilter="";
+  Future<List<User>> following;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     search = TextEditingController();
-
   }
 
   @override
@@ -33,6 +34,7 @@ class FollowingSearchState extends State<FollowingSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    following =ApiUserHelper().getMyFollowing();
     return Column(
       children: <Widget>[
         Container(
@@ -56,25 +58,25 @@ class FollowingSearchState extends State<FollowingSearchPage> {
         PaddingWith(top: 20, widget: MyText("Mes abonnements",fontSize: 20,color: black,),),
         Divider(thickness: 1,),
         Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FireHelper()
-                  .fire_user
-                  .where(keyFollowers, arrayContains: me.uid)
-                  .snapshots(),
+            child: FutureBuilder(
+              future: following,
               builder:
-                  (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  (BuildContext context, snapshot) {
                 if (snapshot.hasData) {
-                  List<DocumentSnapshot> documents = snapshot.data.documents;
-                  if(documents.length<=1){
+                  List<User> documents = snapshot.data;
+                  if(documents.length<2){
+
                     return Center(child: MyText("Aucun abonnement",color: black,fontSize: 18,),);
                   }
+
                   return ListView.builder(
                       itemCount: documents.length,
                       itemBuilder: (BuildContext ctx, int index) {
-                        User user = User(documents[index]);
+                        User user = documents[index];
                         if (user.uid != me.uid&&(user.firstName.contains(myFilter)||user.lastName.contains(myFilter))) {
-                          return UserTile(user);
-                        } else {
+                          return UserTile(user,refresh);
+                        }
+                        else{
                           return SizedBox.shrink();
                         }
                       });
@@ -86,6 +88,13 @@ class FollowingSearchState extends State<FollowingSearchPage> {
       ],
     );
   }
+
+  refresh() {
+    setState(() {
+      following = ApiUserHelper().getMyFollowing();
+    });
+  }
+
   void searchPerson(String input) {
     setState(() {
       myFilter=input;

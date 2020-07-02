@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:memories/view/my_material.dart';
+
+///Model d'une publication
 
 class Post{
 
@@ -15,24 +15,21 @@ class Post{
   String imageUrl;
   DateTime date;
   Position position;
-  List<dynamic> tags;
-  List<dynamic> likes;
+  List<String> tags; // fonctionnalité à developper
+  List<String> likes;
   List<dynamic> comments;
   String adress;
   bool isPrivate;
 
-  Post(DocumentSnapshot snapshot){
-    ref = snapshot.reference;
-    documentId = snapshot.documentID;
-    Map<String, dynamic> map = snapshot.data;
+  Post(Map<String, dynamic> map){
     title = map[keyTitle];
     description = map[keyDescription];
     imageUrl = map[keyImageURL];
-    date = map[keyDate].toDate();
-    position = map[keyPosition]!=null?Position(latitude: map[keyPosition][0], longitude: map[keyPosition][1]):null;
-    likes = map[keyLikes];
-    comments = map[keyComments];
-    id= map[keyPostId];
+    date = DateTime.fromMillisecondsSinceEpoch(map[keyDate]);
+    position = map[keyPosition]!=null&&map[keyPosition]['latitude']!=null?Position(latitude: map[keyPosition]['latitude'].toDouble(), longitude: map[keyPosition]['longitude'].toDouble()):null;
+    likes = List<String>.from(map[keyLikes]);
+    comments = List<dynamic>.from(map[keyComments]);
+    id= map[keyId];
     userId=map[keyUid];
     adress=map[keyAdress];
     isPrivate=map[keyIsPrivate];

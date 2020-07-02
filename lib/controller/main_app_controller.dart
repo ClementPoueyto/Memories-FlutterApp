@@ -1,32 +1,31 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:memories/controller/add_post_controller.dart';
 import 'package:memories/models/notification.dart';
-import 'package:memories/util/alert_helper.dart';
-import 'package:memories/util/fire_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:memories/util/fire_messaging_helper.dart';
-import 'package:memories/view/my_material.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
+import 'package:memories/util/api_notif_helper.dart';
+import 'package:memories/util/api_post_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:memories/util/api_user_helper.dart';
+import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/feed_page.dart';
 import 'package:memories/view/page/notification_page.dart';
 import 'package:memories/view/page/profile_page.dart';
 import 'package:memories/view/page/search_page.dart';
-import 'package:package_info/package_info.dart';
 
 class MainAppController extends StatefulWidget {
-  String uid;
+  final String uid;
   MainAppController(this.uid);
   _MainState createState() => _MainState();
 }
 
 class _MainState extends State<MainAppController> {
-  StreamSubscription streamListener;
-  List<DocumentSnapshot> notifListener;
   bool _isNotified;
-
+  StreamSubscription notifsSubscription;
   int index = 0;
+
+  final ValueNotifier<List<Post>> notifierFeedPosts = new ValueNotifier([]);
 
   @override
   void initState() {
@@ -35,33 +34,33 @@ class _MainState extends State<MainAppController> {
   }
 
   initApp() {
-    _isNotified = false;
-    streamListener = FireHelper()
-        .fire_user
-        .document(widget.uid)
-        .snapshots()
-        .listen((document) {
-      setState(() {
-        me = User(document);
-        MessageHandler().registerNotification();
-        MessageHandler().configLocalNotification();
-        FireHelper()
-            .fire_user
-            .document(me.uid)
-            .collection("notifications")
-            .snapshots()
-            .listen((notifs) {
-          isNotified(notifs);
-        });
-      });
+    notifierFeedPosts.addListener(() {
+
     });
+    ApiPostHelper().getMyFeed(me.following).then((value) => {
+      notifierFeedPosts.value =value
+    });
+
+    _isNotified = false;
+    notifsSubscription = meNotifs.listen((event) {
+      notifsList = event;
+      isNotified(event);
+    });
+    ApiPostHelper().getMyPosts().then((value) => {
+      myListPosts=value,
+      postController.add(value)
+    });
+    ApiNotifHelper().getMyNotifs().then((value) => {
+      notifsList = value,
+      notifsController.add(value),
+    });
+
   }
 
-  bool isNotified(QuerySnapshot notifs) {
+  bool isNotified(List<Notif> notifs) {
     setState(() {
       bool _shouldBeNotified = false;
-      notifs.documents.forEach((element) {
-        Notif myNotif = Notif(element);
+      notifs.forEach((myNotif) {
         if (!myNotif.seen) {
           _shouldBeNotified = true;
         }
@@ -71,13 +70,11 @@ class _MainState extends State<MainAppController> {
       } else {
         _isNotified = false;
       }
-      notifListener = notifs.documents;
     });
   }
 
   @override
   void dispose() {
-    streamListener.cancel();
     super.dispose();
   }
 
@@ -135,8 +132,9 @@ class _MainState extends State<MainAppController> {
   }
 
   push() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AddPost(null)));
+     Navigator.push(
+        context, MaterialPageRoute(builder: (context) => AddPost(null,this.notifierFeedPosts)));
+
   }
 
   buttonSelected(int index) {
@@ -152,13 +150,17 @@ class _MainState extends State<MainAppController> {
   Widget showPage() {
     switch (index) {
       case 0:
-        return FeedPage(me);
+        return FeedPage(me,this.notifierFeedPosts);
       case 1:
         return SearchPage();
       case 2:
         return ProfilePage(me);
       case 3:
-        return NotificationPage(notifListener);
+        return NotificationPage();
     }
+  }
+
+  Future<List<User>> getFeedUsers(){
+    return ApiUserHelper().getMyFollowing();
   }
 }

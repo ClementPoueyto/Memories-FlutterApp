@@ -2,22 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/comment.dart';
 import 'package:memories/models/user.dart';
+import 'package:memories/util/api_user_helper.dart';
+import 'package:memories/util/date_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 
 class CommentTile extends StatelessWidget {
 
-  Comment comment;
+  final Comment comment;
 
   CommentTile(this.comment);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FireHelper().fire_user.document(comment.userId).snapshots(),
-      builder: (BuildContext ctx, AsyncSnapshot<DocumentSnapshot> snap) {
+    return FutureBuilder(
+      future: ApiUserHelper().getUserById(comment.userId),
+      builder: (BuildContext ctx, snap) {
         if (snap.hasData) {
-          User user = User(snap.data);
+          User user= snap.data;
           return Container(
 
             decoration: BoxDecoration(
@@ -52,10 +54,13 @@ class CommentTile extends StatelessWidget {
                           widget:Text("${user.firstName} ${user.lastName}"),),
                       ],
                     ),
-                    Text(comment.date,)
+                    Text(DateHelper().myDate(comment.date)),
                   ],
                 ),
-                Text(comment.textComment, )
+                PaddingWith(
+                  top: 8, bottom: 0,
+                  left: 15, right: 15,
+                  widget :MyText(comment.textComment,color: black,fontSize: 13, ),)
               ],
             ),
           );

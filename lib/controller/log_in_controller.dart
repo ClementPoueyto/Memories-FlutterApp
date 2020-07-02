@@ -1,13 +1,17 @@
 import 'package:clip_shadow/clip_shadow.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/main.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
-import 'package:memories/util/alert_helper.dart';
-import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/ui/my_clipper.dart';
 import 'package:memories/view/ui/my_second_clipper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 enum authProblems { UserNotFound, PasswordNotValid, NetworkError }
+
+/// Page de connection de l'utilisateur
 
 class LogInController extends StatefulWidget {
   _LogInState createState() => _LogInState();
@@ -146,7 +150,8 @@ class _LogInState extends State<LogInController> {
                               width: MediaQuery.of(context).size.width / 1.5,
                               child: MyButton(
                                 function: () {
-                                  if (_formKey.currentState.validate()) logIn();
+                                  logIn();
+                                  if (_formKey.currentState.validate()) ;
                                 },
                                 color: accent,
                                 textColor: white,
@@ -168,17 +173,15 @@ class _LogInState extends State<LogInController> {
     );
   }
 
-  void logIn() {
+  void logIn()async {
     if (_mail.text != null && _mail.text != "") {
       if (_pwd.text != null && _pwd.text != "") {
-        FireHelper().signIn(_mail.text, _pwd.text, context).then(
-              (value) => {
-                if (value != null)
-                  {
-                    Navigator.pop(context),
-                  }
-              },
-            );
+        final res =await ApiUserHelper().logIn(_mail.text.trim(), _pwd.text, context);
+        if(res.id!=null){
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('token', clientToken);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+        }
       }
     }
   }
@@ -200,7 +203,7 @@ class _LogInState extends State<LogInController> {
     if (value.isEmpty) {
       return 'Merci de remplir ce champ';
     }
-    if (value.length < 6) {
+    if (value.length < 4) {
       return 'Le mot de passe doit contenir au moins 6 caractères';
     }
     if(value.length>100){

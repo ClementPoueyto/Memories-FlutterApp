@@ -6,8 +6,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:memories/controller/user_controller.dart';
 import 'package:memories/delegate/header_post_delegate.dart';
 import 'package:memories/models/post.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/date_helper.dart';
 import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -18,7 +20,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class ProfilePostsPage extends StatefulWidget {
   final bool isme;
-  final User user;
+  User user;
   final List<DocumentSnapshot> documents;
   final Map<String, List<Post>> listPosts;
   ProfilePostsPage(this.isme, this.user, this.documents, this.listPosts);
@@ -173,7 +175,9 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
   }
 
   void followUser(User user) async{
-    await FireHelper().addFollow(user);
+
+      User updated =await ApiUserHelper().follow(user.uid);
+      me=updated;
     setState(() {
     });
   }
@@ -256,11 +260,12 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
             statusBarColor: accent,
             backgroundColor: Colors.white,
           ));
+      if (cropped != null) {
+        imageTaken = cropped;
+        await FireHelper().modifyPicture(imageTaken);
+      }
       setState(() {
-        if (cropped != null) {
-          imageTaken = cropped;
-          FireHelper().modifyPicture(imageTaken);
-        }
+        widget.user=me;
       });
     }
   }

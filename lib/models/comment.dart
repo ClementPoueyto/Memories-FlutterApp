@@ -1,14 +1,15 @@
 import 'package:memories/view/my_material.dart';
-import 'package:memories/util/date_helper.dart';
+
+///Model Commentaire de post
 
 class Comment {
   String userId;
   String textComment;
-  String date;
+  DateTime date;
 
-  Comment(Map<dynamic, dynamic> map) {
+  Comment(Map<String, dynamic> map) {
     userId = map[keyUid];
     textComment = map[keyTextComment];
-    date = DateHelper().myDate(map[keyDate].toDate());
+    date = DateTime.fromMillisecondsSinceEpoch(map[keyDate]);
   }
 }
