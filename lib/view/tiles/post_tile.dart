@@ -5,7 +5,6 @@ import 'package:memories/controller/user_controller.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/util/api_post_helper.dart';
-import 'package:memories/util/fire_helper.dart';
 import 'package:memories/util/date_helper.dart';
 
 import 'package:memories/view/my_material.dart';
@@ -14,9 +13,10 @@ class PostTile extends StatelessWidget{
   final Post post;
   final User user;
   final bool detail;
-  Function notifyParent;
   final ValueNotifier<List<Post>> notifierPosts;
-  PostTile({@required Post this.post, @required User this.user, bool this.detail : false,Function this.notifyParent, ValueNotifier<List<Post>> this.notifierPosts});
+  final ValueNotifier<Post> notifierPost;
+  final Function notifyParent;
+  PostTile({@required Post this.post, @required User this.user, bool this.detail : false, ValueNotifier<List<Post>> this.notifierPosts,ValueNotifier<Post> this.notifierPost ,this.notifyParent});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class PostTile extends StatelessWidget{
           child :GestureDetector(
             onTap: (){
               if(user.uid!=me.uid&&detail==true)
-              Navigator.push(context, MaterialPageRoute(builder: (context) => UserController(user)));},
+              Navigator.push(context, MaterialPageRoute(builder: (context) => UserController(user,this.notifierPosts)));},
           child :Column(
               children: <Widget>[
               PaddingWith(
@@ -108,9 +108,9 @@ class PostTile extends StatelessWidget{
                     children: <Widget>[
                       Row(
                         children: <Widget>[
-                          MyIconButton(function: (){
-                            ApiPostHelper().likePost(post.id);
-                            update();
+                          MyIconButton(function: ()async{
+                            Post updatedPost = await ApiPostHelper().likePost(post.id);
+                            update(updatedPost);
                             },icon: post.likes.contains(me.uid)?likeIconFull:likeIcon,),
                           Text(post.likes.length.toString()),
                         ],
@@ -131,8 +131,17 @@ class PostTile extends StatelessWidget{
     );
   }
 
-  update()async{
-    notifyParent(post.id);
+  update(Post post)async{
+    this.notifierPosts.value.removeWhere((element) => element.id==post.id);
+    this.notifierPosts.value.add(post);
+    this.notifierPosts.notifyListeners();
+    if(this.notifierPost!=null){
+      this.notifierPost.value=post;
+      this.notifierPost.notifyListeners();
+    }
+    if(this.notifyParent!=null) {
+      this.notifyParent();
+    }
   }
 
 }

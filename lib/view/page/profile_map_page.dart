@@ -15,8 +15,9 @@ import 'dart:math';
 class ProfileMapPage extends StatefulWidget {
   final Map<String, List<Post>> listPosts;
   final User user;
+  final ValueNotifier<List<Post>> notifierPosts;
 
-  ProfileMapPage(this.listPosts, this.user);
+  ProfileMapPage(this.listPosts, this.user,this.notifierPosts);
 
   _ProfileMapState createState() => _ProfileMapState();
 }
@@ -222,7 +223,7 @@ class _ProfileMapState extends State<ProfileMapPage> {
                   color: Colors.blue,
                   iconSize: 40.0,
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,widget.user,null)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPost(post,widget.user,widget.notifierPosts)));
                   },
                 ),
                 SizedBox(height: 25,),

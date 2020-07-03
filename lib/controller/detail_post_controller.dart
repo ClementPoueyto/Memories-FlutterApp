@@ -1,32 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:memories/controller/add_post_controller.dart';
+import 'package:memories/models/comment.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/api_post_helper.dart';
+import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/detail_post_page.dart';
 
 ///Affiche un post entierement sur une page avec la liste des commentaires
-class DetailPost extends StatelessWidget {
+class DetailPost extends StatefulWidget {
   final User user;
   final Post post;
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<List<Post>> notifierPosts;
-  DetailPost(this.post, this.user,this.notifierPosts);
+
+  DetailPost(this.post, this.user, this.notifierPosts);
+
+  DetailPostState createState() => DetailPostState();
+
+}
+
+  class DetailPostState extends State<DetailPost>{
+
+    Future<List<User>> users;
+    Future<Post> post;
+    ValueNotifier<Post> notifierPost= new ValueNotifier(null);
+
+  @override
+  void initState() {
+    super.initState();
+   refreshData();
+
+  }
+
+  refreshData(){
+    ApiPostHelper().getPostById(widget.post.id).then((value) => {
+      this.notifierPost.value=value,
+      users= fetchUsersComment(sortCommentUserId(widget.post.comments))
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+
 
     TextEditingController controller = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          if (post.userId == me.uid)
+          if (widget.post.userId == me.uid)
             MyIconButton(
               icon: editIcon,
               function: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => AddPost(post,this.notifierPosts)));
+                    MaterialPageRoute(builder: (context) => AddPost(widget.post,widget.notifierPosts)));
               },
             )
         ],
@@ -37,11 +65,32 @@ class DetailPost extends StatelessWidget {
         children: <Widget>[
           Expanded(
               child: InkWell(
-            child: DetailPostPage(post, user),
-            onTap: () {
-              FocusScope.of(context).requestFocus(FocusNode());
-            },
-          )),
+            child: ValueListenableBuilder<Post>(
+            valueListenable: this.notifierPost,
+              builder: (context, value, child) {
+                Post newPost =value;
+                return FutureBuilder(
+                    future: (users),
+                    builder: (BuildContext context, snapshot) {
+                      if (snapshot.hasData) {
+                        List<User> usersComment = snapshot.data;
+                        return DetailPostPage(
+                            newPost, widget.user, widget.notifierPosts,
+                            this.notifierPost, usersComment);
+                      }
+                      else {
+                        return LoadingCenter();
+                      }
+                    }
+
+                );
+
+              }
+          ),
+                onTap: () {
+                  FocusScope.of(context).requestFocus(FocusNode());
+                },),
+          ),
           Divider(
             thickness: 2,
           ),
@@ -72,7 +121,7 @@ class DetailPost extends StatelessWidget {
                       widget: Container(
                         width: MediaQuery.of(context).size.width - 100.0,
                         child: Form(
-                          key: _formKey,
+                          key: widget._formKey,
                           child: MyFormTextField(
                             validator: validatorComment,
                             controller: controller,
@@ -87,7 +136,7 @@ class DetailPost extends StatelessWidget {
                   IconButton(
                     icon: sendIcon,
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
+                      if (widget._formKey.currentState.validate()) {
                         sendComment(context, controller);
                       }
                     },
@@ -110,7 +159,7 @@ class DetailPost extends StatelessWidget {
   }
 
   ///Envoie le commentaire via appel api
-  sendComment(BuildContext context, TextEditingController controller) {
+  sendComment(BuildContext context, TextEditingController controller)async {
     FocusScope.of(context).requestFocus(FocusNode());
     if (controller.text != null && controller.text != "") {
       Map<String, dynamic> map = {
@@ -118,7 +167,26 @@ class DetailPost extends StatelessWidget {
         keyTextComment: controller.text,
         keyDate: DateTime.now().millisecondsSinceEpoch,
       };
-      ApiPostHelper().addComment(map, post.id);
+      Comment commentToAdd = await ApiPostHelper().addComment(map, widget.post.id);
+      widget.notifierPosts.value.firstWhere((element) => element.id==widget.post.id).comments.add(commentToAdd);
+      widget.notifierPosts.notifyListeners();
+      setState(() {
+        refreshData();
+      });
     }
   }
+
+    List<String> sortCommentUserId(List<Comment> comments){
+      List<String> idsToReturn=List();
+      for(Comment comment in comments){
+        if(!idsToReturn.contains(comment.userId)){
+          idsToReturn.add(comment.userId);
+        }
+      }
+      return idsToReturn;
+    }
+
+    Future<List<User>> fetchUsersComment(List<dynamic> ids){
+      return ApiUserHelper().getUsersFromIds(ids);
+    }
 }

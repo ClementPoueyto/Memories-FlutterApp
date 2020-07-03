@@ -39,6 +39,7 @@ class _AddPostState extends State<AddPost> {
   List<Marker> markersList = [];
   Future<List<Placemark>> adressPlacemark;
   bool private = false;
+  bool fileDeleted = false;
   Post post;
   final _formKey = GlobalKey<FormState>();
   Future<Position> lastKnownposition;
@@ -202,6 +203,7 @@ class _AddPostState extends State<AddPost> {
                                           icon: Icon(Icons.delete),
                                           function: () {
                                             setState(() {
+                                              fileDeleted=true;
                                               imageUrl = null;
                                             });
                                           },
@@ -218,6 +220,7 @@ class _AddPostState extends State<AddPost> {
                                               icon: Icon(Icons.delete),
                                               function: () {
                                                 setState(() {
+                                                  fileDeleted = true;
                                                   imageTaken = null;
                                                 });
                                               },
@@ -503,7 +506,9 @@ class _AddPostState extends State<AddPost> {
           private,
           post != null
               ? post.date.millisecondsSinceEpoch
-              : DateTime.now().millisecondsSinceEpoch);
+              : DateTime.now().millisecondsSinceEpoch,
+        fileDeleted
+      );
 
 
       if (post == null) { //si création de post
@@ -597,7 +602,8 @@ class _AddPostState extends State<AddPost> {
       String adress,
       File file,
       bool private,
-      int date) async {
+      int date,
+      bool fileDeleted) async {
     List<dynamic> likes = [];
     List<dynamic> comments = [];
     Map<String, dynamic> map = {
@@ -627,12 +633,12 @@ class _AddPostState extends State<AddPost> {
       map[keyImageURL] = finalised;
       return map;
     } else if (file == null && (imageUrl == null || imageUrl == "")) {
-      if (post != null) {
-        /*FireHelper()
+      if (fileDeleted ==true) {
+        FireHelper()
             .storage_posts
             .child(me.uid)
             .child(DateHelper().myDate(post.date))
-            .delete();*/
+            .delete();
       }
       map[keyImageURL] = "";
       return Future.value(map);

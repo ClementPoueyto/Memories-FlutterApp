@@ -10,18 +10,12 @@ import 'package:memories/view/my_material.dart';
 class CommentTile extends StatelessWidget {
 
   final Comment comment;
-
-  CommentTile(this.comment);
+  final User user;
+  CommentTile(this.comment,this.user);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: ApiUserHelper().getUserById(comment.userId),
-      builder: (BuildContext ctx, snap) {
-        if (snap.hasData) {
-          User user= snap.data;
-          return Container(
-
+    return Container(
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
@@ -64,11 +58,5 @@ class CommentTile extends StatelessWidget {
               ],
             ),
           );
-        } else {
-          return Container();
         }
-      },
-    );
-  }
-
 }

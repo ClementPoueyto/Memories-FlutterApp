@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:memories/models/comment.dart';
 import 'package:memories/view/my_material.dart';
 
 ///Model d'une publication
@@ -17,7 +18,7 @@ class Post{
   Position position;
   List<String> tags; // fonctionnalité à developper
   List<String> likes;
-  List<dynamic> comments;
+  List<Comment> comments;
   String adress;
   bool isPrivate;
 
@@ -28,11 +29,19 @@ class Post{
     date = DateTime.fromMillisecondsSinceEpoch(map[keyDate]);
     position = map[keyPosition]!=null&&map[keyPosition]['latitude']!=null?Position(latitude: map[keyPosition]['latitude'].toDouble(), longitude: map[keyPosition]['longitude'].toDouble()):null;
     likes = List<String>.from(map[keyLikes]);
-    comments = List<dynamic>.from(map[keyComments]);
+    comments = getComments(map[keyComments]);
     id= map[keyId];
     userId=map[keyUid];
     adress=map[keyAdress];
     isPrivate=map[keyIsPrivate];
+  }
+
+  List<Comment> getComments(List<dynamic> comments){
+    List<Comment> list = List();
+    for(Map<String,dynamic> comment in comments){
+      list.add(Comment(comment));
+    }
+    return list;
   }
 
   Map<String,dynamic> toMap(){

@@ -1,12 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
-import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/user_tile.dart';
 import 'package:memories/util/api_user_helper.dart';
 
 class QuerySearchPage extends StatefulWidget {
+  final ValueNotifier<List<Post>> notifierPosts;
+  QuerySearchPage(this.notifierPosts);
   QuerySearchState createState() => QuerySearchState();
 }
 
@@ -16,14 +17,12 @@ class QuerySearchState extends State<QuerySearchPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     search = TextEditingController();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     search.dispose();
     super.dispose();
   }
@@ -110,7 +109,7 @@ class QuerySearchState extends State<QuerySearchPage> {
                             if (user.uid != me.uid) {
                               return UserTile(user, (){
                                 setState(() {
-                              });});
+                              });}, widget.notifierPosts);
                             } else {
                               return SizedBox.shrink();
                             }

@@ -179,7 +179,7 @@ class _LogInState extends State<LogInController> {
         final res =await ApiUserHelper().logIn(_mail.text.trim(), _pwd.text, context);
         if(res.id!=null){
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('token', clientToken);
+          await prefs.setString('token', clientToken);
           Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
         }
       }

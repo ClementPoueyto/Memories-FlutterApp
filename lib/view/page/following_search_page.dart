@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/util/fire_helper.dart';
@@ -8,7 +9,8 @@ import 'package:memories/view/tiles/user_tile.dart';
 
 class FollowingSearchPage extends StatefulWidget {
 
-
+  final ValueNotifier<List<Post>> notifierPosts;
+  FollowingSearchPage(this.notifierPosts);
   FollowingSearchState createState() => FollowingSearchState();
 }
 
@@ -74,7 +76,7 @@ class FollowingSearchState extends State<FollowingSearchPage> {
                       itemBuilder: (BuildContext ctx, int index) {
                         User user = documents[index];
                         if (user.uid != me.uid&&(user.firstName.contains(myFilter)||user.lastName.contains(myFilter))) {
-                          return UserTile(user,refresh);
+                          return UserTile(user,refresh,widget.notifierPosts);
                         }
                         else{
                           return SizedBox.shrink();

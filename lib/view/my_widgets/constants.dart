@@ -13,15 +13,13 @@ StreamController<List<Post>> postController = StreamController<List<Post>>.broad
 Stream<List<Post>> mePosts = postController.stream;
 List<Post> myListPosts = List();
 
-//NOTIFS
-StreamController<List<Notif>> notifsController =StreamController<List<Notif>>.broadcast();
-Stream<List<Notif>> meNotifs = notifsController.stream;
-List<Notif> notifsList = List();
-List<User> userNotif = List();
-
 //FEED
-List<Post> myFeedPost=List();
-List<User> myFeedUser=List();
+List<Post> feedPostSave= List();
+List<User> feedUserPostSave = List();
+
+//NOTIFS
+List<Notif> feedNotifSave = List();
+List<User> feedUserNotifSave = List();
 
 //colors
 const Color white = const Color(0xFFFFFFFF);

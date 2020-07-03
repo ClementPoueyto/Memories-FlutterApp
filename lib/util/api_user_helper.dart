@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:memories/main.dart';
 import 'package:memories/models/client.dart';
+import 'package:memories/models/notification.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/alert_helper.dart';
 import 'package:memories/view/my_material.dart';
@@ -211,11 +213,12 @@ class ApiUserHelper {
   Future logOut(BuildContext context) async {
     clientToken = null;
     me = null;
-    notifsList = List();
-    userNotif = List();
-    myFeedPost = List();
-    myFeedUser = List();
     myListPosts = List();
+    myListPosts = List();
+    feedPostSave= List();
+    feedUserPostSave = List();
+    feedNotifSave = List();
+    feedUserNotifSave = List();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('token', clientToken);
     Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
@@ -292,6 +295,18 @@ class ApiUserHelper {
       return Future.value(User(profile));
     }
     return Future.value(User(profile));
+  }
+
+
+  Future<List<User>> getUsersFromIds(List<String> usersId) async {
+    List<User> users = List();
+    await Future.forEach(usersId, (element) async {
+      User user = await getUserById(element);
+      if (user != null&& !users.contains(user.uid)) {
+        users.add(user);
+      }
+    });
+    return users;
   }
 
   streamTest() async {

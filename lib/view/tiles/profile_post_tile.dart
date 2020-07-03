@@ -11,18 +11,19 @@ class ProfilePostTile extends StatelessWidget {
   final Post post;
   final User user;
   final bool detail;
+  final ValueNotifier<List<Post>> notifierPosts;
 
   ProfilePostTile(
       {@required Post this.post,
       @required User this.user,
-      bool this.detail: false});
+      bool this.detail: false, this.notifierPosts});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => DetailPost(post, user,null)));
+            MaterialPageRoute(builder: (context) => DetailPost(post, user,this.notifierPosts)));
       },
       child: Card(
         elevation: 7,

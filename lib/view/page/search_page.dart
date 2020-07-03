@@ -1,15 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/my_widgets/loadingCenter.dart';
 import 'package:memories/view/page/followers_search_page.dart';
 import 'package:memories/view/page/following_search_page.dart';
 import 'package:memories/view/page/query_search_page.dart';
-import 'package:memories/view/tiles/user_tile.dart';
 
 class SearchPage extends StatefulWidget {
+  final ValueNotifier<List<Post>> notifierPosts;
+  SearchPage(this.notifierPosts);
   _SearchState createState() => _SearchState();
 }
 
@@ -24,7 +26,7 @@ class _SearchState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _pages = [QuerySearchPage(),FollowersSearchPage(), FollowingSearchPage()];
+    _pages = [QuerySearchPage(widget.notifierPosts),FollowersSearchPage(widget.notifierPosts), FollowingSearchPage(widget.notifierPosts)];
   }
 
   @override

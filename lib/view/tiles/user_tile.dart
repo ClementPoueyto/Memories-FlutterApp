@@ -1,4 +1,5 @@
 import 'package:memories/controller/user_controller.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/util/api_user_helper.dart';
@@ -8,7 +9,9 @@ import 'package:memories/view/page/profile_page.dart';
 class UserTile extends StatefulWidget{
   User user;
   Function notifyParent;
-  UserTile(this.user,this.notifyParent);
+  final ValueNotifier<List<Post>> notifierPosts;
+
+  UserTile(this.user,this.notifyParent,this.notifierPosts);
 
   UserTileState createState() => UserTileState();
 
@@ -26,12 +29,13 @@ class UserTileState extends State<UserTile>{
   Widget build(BuildContext context) {
 
     return InkWell(
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(
+      onTap: ()async{
+        final result =await Navigator.push(context, MaterialPageRoute(
           builder: (BuildContext ctx){
-            return UserController(user);
+            return UserController(user,widget.notifierPosts);
           }
         ));
+          widget.notifyParent();
       },
       child: Container(
         color: Colors.transparent,

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:memories/models/post.dart';
 import 'package:memories/models/user.dart';
 import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/tiles/user_tile.dart';
 
 class FollowersSearchPage extends StatefulWidget {
+  final ValueNotifier<List<Post>> notifierPosts;
+  FollowersSearchPage(this.notifierPosts);
   FollowersSearchState createState() => FollowersSearchState();
 }
 
@@ -65,7 +68,7 @@ class FollowersSearchState extends State<FollowersSearchPage> {
                   itemBuilder: (BuildContext ctx, int index) {
                     User user = documents[index];
                     if (user.uid != me.uid&&(user.firstName.contains(myFilter)||user.lastName.contains(myFilter))) {
-                      return UserTile(user,refresh);
+                      return UserTile(user,refresh,widget.notifierPosts);
                     }
                     else{
                       return SizedBox.shrink();

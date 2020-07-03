@@ -1,13 +1,9 @@
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:memories/controller/add_post_controller.dart';
 import 'package:memories/models/notification.dart';
 import 'package:memories/models/post.dart';
-import 'package:memories/models/user.dart';
 import 'package:memories/util/api_notif_helper.dart';
 import 'package:memories/util/api_post_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/view/page/feed_page.dart';
 import 'package:memories/view/page/notification_page.dart';
@@ -22,39 +18,41 @@ class MainAppController extends StatefulWidget {
 
 class _MainState extends State<MainAppController> {
   bool _isNotified;
-  StreamSubscription notifsSubscription;
   int index = 0;
 
   final ValueNotifier<List<Post>> notifierFeedPosts = new ValueNotifier([]);
+  final ValueNotifier<List<Notif>> notifierFeedNotifs = new ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
     initApp();
   }
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   initApp() {
-    notifierFeedPosts.addListener(() {
-
-    });
-    ApiPostHelper().getMyFeed(me.following).then((value) => {
+    //FETCH DATA
+    List<String> usersIdToFetchData=me.following;
+    usersIdToFetchData.add(me.uid);
+    ApiPostHelper().getMyFeed(usersIdToFetchData).then((value) => {
       notifierFeedPosts.value =value
     });
 
-    _isNotified = false;
-    notifsSubscription = meNotifs.listen((event) {
-      notifsList = event;
-      isNotified(event);
-    });
-    ApiPostHelper().getMyPosts().then((value) => {
-      myListPosts=value,
-      postController.add(value)
-    });
     ApiNotifHelper().getMyNotifs().then((value) => {
-      notifsList = value,
-      notifsController.add(value),
+      notifierFeedNotifs.value=value
     });
 
+    _isNotified = false;
+    notifierFeedNotifs.addListener(() {
+      feedNotifSave = notifierFeedNotifs.value;
+      isNotified(notifierFeedNotifs.value);
+    });
+    notifierFeedPosts.addListener(() {
+      feedPostSave = this.notifierFeedPosts.value;
+    });
   }
 
   bool isNotified(List<Notif> notifs) {
@@ -73,10 +71,7 @@ class _MainState extends State<MainAppController> {
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +118,7 @@ class _MainState extends State<MainAppController> {
                     child: showPage())),
             backgroundColor: whiteShadow,
             floatingActionButton: FloatingActionButton(
-              onPressed: push,
+              onPressed: pushAddPost,
               child: addIcon,
             ),
             floatingActionButtonLocation:
@@ -131,7 +126,7 @@ class _MainState extends State<MainAppController> {
           );
   }
 
-  push() {
+  pushAddPost() {
      Navigator.push(
         context, MaterialPageRoute(builder: (context) => AddPost(null,this.notifierFeedPosts)));
 
@@ -152,15 +147,12 @@ class _MainState extends State<MainAppController> {
       case 0:
         return FeedPage(me,this.notifierFeedPosts);
       case 1:
-        return SearchPage();
+        return SearchPage(this.notifierFeedPosts);
       case 2:
-        return ProfilePage(me);
+        return ProfilePage(me,this.notifierFeedPosts);
       case 3:
-        return NotificationPage();
+        return NotificationPage(this.notifierFeedPosts,this.notifierFeedNotifs);
     }
   }
 
-  Future<List<User>> getFeedUsers(){
-    return ApiUserHelper().getMyFollowing();
-  }
 }

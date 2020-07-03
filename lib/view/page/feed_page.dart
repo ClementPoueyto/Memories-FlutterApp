@@ -19,23 +19,21 @@ class FeedPage extends StatefulWidget {
 
 class _FeedState extends State<FeedPage> {
   Future<List<User>> feedUsers;
-  Future<List<Post>> feedPost;
   List<User> users;
   Post memory;
   double expanded = 0;
   Map<String, List<Post>> sameDay;
 
-
-
-
   @override
-
   void initState() {
     super.initState();
+
     feedUsers = ApiUserHelper().getMyFollowing();
+    feedUsers.then((value) => {
+      feedUserPostSave=value,
+    });
     sameDay = Map();
     sameDay.clear();
-
   }
 
   @override
@@ -51,28 +49,18 @@ class _FeedState extends State<FeedPage> {
           SliverAppBar(
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text("Memories"),
-              background: FutureBuilder(
-                  future: ApiPostHelper().getMyPosts(),
-                  builder: (BuildContext context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return LoadingCenter();
-                    } else {
-                      if (memory == null) {
-                        this.memory = getMemory(snapshot.data);
-                        if (memory == null)
-                          return Center(
-                            child: MyText("Pas de souvenir aujourd'hui"),
-                          );
-                      }
-                      return GestureDetector(
+                title: Text("Memories"),
+                background: memory == null
+                    ? Center(
+                        child: MyText("Pas de souvenir aujourd'hui"),
+                      )
+                    : GestureDetector(
                         onTap: () {
-
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      DetailPost(memory, me, widget.notifierPosts)));
+                                  builder: (context) => DetailPost(
+                                      memory, me, widget.notifierPosts)));
                         },
                         child: Stack(
                           children: <Widget>[
@@ -125,121 +113,116 @@ class _FeedState extends State<FeedPage> {
                             ),
                           ],
                         ),
-                      );
-                    }
-                  }),
-            ),
+                      )),
             expandedHeight: 200,
           )
         ];
       },
       body: RefreshIndicator(
-        child:
-            ValueListenableBuilder<List<Post>>(
-                valueListenable: widget.notifierPosts,
-                builder: (context, value, child){
-                  return FutureBuilder(
-                      future: feedUsers,
-                      builder: (BuildContext context, snapshot) {
-                        if (snapshot.hasData) {
-                          users = snapshot.data;
-                          return listBuilder();
-                        } else {
-                          return LoadingCenter();
-                        }
-                      },
-                  );
-                }
-            ),
+        child: ValueListenableBuilder<List<Post>>(
+            valueListenable: widget.notifierPosts,
+            builder: (context, value, child) {
+              return FutureBuilder(
+                future: feedUsers,
+                builder: (BuildContext context, snapshot) {
+                  if (snapshot.hasData) {
+                    users = snapshot.data;
+                    if(users.length>0&&value.length>0) {
+                      return listBuilder(
+                          sortPosts(value), users);
+                    }
+                    else{
+                      return Center(
+                        child: MyText(
+                          "Aucune publication n'est disponible",
+                          color: black,
+                        ),
+                      );
+                    }
+                  } else {
+                    if(feedUserPostSave.length>0&&feedPostSave.length>0){
+                      return listBuilder(feedPostSave, feedUserPostSave);
+                    }
+                    else{
+                      return LoadingCenter();
+                    }
+                  }
+                },
+              );
+            }),
         /**/
-        onRefresh: ()=>ReloadFeed(),
+        onRefresh: () => ReloadFeed(),
       ),
-
     );
   }
 
-  Widget listBuilder(){
-    List<Post> posts = getPosts(widget.notifierPosts.value);
-    print(posts.length);
-
-    return (posts.length == 0 ||users.length==0)
-        ? Center(
-      child: MyText(
-        "Aucune publication n'est disponible",
-        color: black,
-      ),
-    )
-        : ListView.builder(
-        itemCount: posts.length,
-        itemBuilder: (BuildContext context, int index) {
-          Post post = posts[index];
-          User user = users.firstWhere((u) => u.uid == post.userId);
-          if (sameDay[DateHelper().myDate(post.date)] != null &&
-              !sameDay[DateHelper().myDate(post.date)]
-                  .contains(post)) {
-            sameDay[DateHelper().myDate(post.date)].add(post);
-          } else {
-            sameDay[DateHelper().myDate(post.date)] = [];
-            sameDay[DateHelper().myDate(post.date)].add(post);
-          }
-          if (sameDay[DateHelper().myDate(post.date)].length >
-              1) {
-            return PostTile(
-              post: post,
-              user: user,
-              detail: true,
-              notifierPosts: widget.notifierPosts,
-              notifyParent: refresh,
-            );
-          } else {
-            return Column(
-              children: <Widget>[
-                PaddingWith(
-                  widget: Container(
-                    width: MediaQuery.of(context).size.width / 2,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.all(Radius.circular(20)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: accent,
-                          offset: Offset(0.0, 1.0), //(x,y)
-                          blurRadius: 2.0,
-                        ),
-                      ],
-                      color: base,
-                      border: Border.all(
-                        color: accent,
-                      ),
-                    ),
-                    child: Center(
-                      child: MyText(
-                        DateHelper().isToday(post.date)
-                            ? "Aujourd'hui"
-                            : DateHelper().myDate(post.date),
-                        color: white,
-                      ),
-                    ),
-                  ),
-                ),
-                PostTile(
+  Widget listBuilder(List<Post> posts, List<User> users) {
+    return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (BuildContext context, int index) {
+              Post post = posts[index];
+              User user = users.firstWhere((u) => u.uid == post.userId);
+              if (sameDay[DateHelper().myDate(post.date)] != null &&
+                  !sameDay[DateHelper().myDate(post.date)].contains(post)) {
+                sameDay[DateHelper().myDate(post.date)].add(post);
+              } else {
+                sameDay[DateHelper().myDate(post.date)] = [];
+                sameDay[DateHelper().myDate(post.date)].add(post);
+              }
+              if (sameDay[DateHelper().myDate(post.date)].length > 1) {
+                return PostTile(
                   post: post,
                   user: user,
                   detail: true,
                   notifierPosts: widget.notifierPosts,
-                  notifyParent: refresh,
-                )
-              ],
-            );
-          }
-        });
+                );
+              } else {
+                return Column(
+                  children: <Widget>[
+                    PaddingWith(
+                      widget: Container(
+                        width: MediaQuery.of(context).size.width / 2,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accent,
+                              offset: Offset(0.0, 1.0), //(x,y)
+                              blurRadius: 2.0,
+                            ),
+                          ],
+                          color: base,
+                          border: Border.all(
+                            color: accent,
+                          ),
+                        ),
+                        child: Center(
+                          child: MyText(
+                            DateHelper().isToday(post.date)
+                                ? "Aujourd'hui"
+                                : DateHelper().myDate(post.date),
+                            color: white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    PostTile(
+                      post: post,
+                      user: user,
+                      detail: true,
+                      notifierPosts: widget.notifierPosts,
+                    )
+                  ],
+                );
+              }
+            });
   }
 
-  ReloadFeed() async{
+  ReloadFeed() async {
     users = await ApiUserHelper().getMyFollowing();
     List<String> ids = List();
-    for(User user in users){
+    for (User user in users) {
       ids.add(user.uid);
     }
     widget.notifierPosts.value = await ApiPostHelper().getMyFeed(ids);
@@ -247,22 +230,8 @@ class _FeedState extends State<FeedPage> {
     return widget.notifierPosts.value;
   }
 
-  getUsers(List<User> userDocs) {
-    List<User> myList = users;
-    userDocs.forEach((u) {
-      User user = u;
-      if (myList.every((p) => p.uid != user.uid)) {
-        myList.add(user);
-      } else {
-        User toBeChanged = myList.singleWhere((p) => p.uid == user.uid);
-        myList.remove(toBeChanged);
-        myList.add(user);
-      }
-    });
-    return myList;
-  }
 
-  List<Post> getPosts(List<Post> postDocs) {
+  List<Post> sortPosts(List<Post> postDocs) {
     List<Post> myList = postDocs;
     postDocs.forEach((p) {
       Post post = p;
@@ -270,10 +239,10 @@ class _FeedState extends State<FeedPage> {
       if (myList.every((p) => p.id != post.id)) {
         myList.add(post);
       } else {
-          sameDay = Map();
-          Post toBeChanged = myList.singleWhere((p) => p.id == post.id);
-          myList.remove(toBeChanged);
-          myList.add(post);
+        sameDay = Map();
+        Post toBeChanged = myList.singleWhere((p) => p.id == post.id);
+        myList.remove(toBeChanged);
+        myList.add(post);
       }
     });
     myList.sort((a, b) => b.date.compareTo(a.date));
@@ -303,7 +272,8 @@ class _FeedState extends State<FeedPage> {
   }
 
   refresh(String idPost) async {
-    Post postToUpdate = widget.notifierPosts.value.firstWhere((element) => element.id == idPost);
+    Post postToUpdate = widget.notifierPosts.value
+        .firstWhere((element) => element.id == idPost);
     if (postToUpdate.likes.contains(me.uid)) {
       postToUpdate.likes.remove(me.uid);
     } else {

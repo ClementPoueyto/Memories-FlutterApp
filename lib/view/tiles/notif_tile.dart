@@ -12,27 +12,29 @@ import 'package:memories/view/my_material.dart';
 class NotifTile extends StatelessWidget {
   final Notif notif;
   final User user;
-  final Function notifyParent;
+  final ValueNotifier<List<Post>> notifierPosts;
+  final ValueNotifier<List<Notif>> notifierNotifs;
 
-  NotifTile(this.notif, this.user, this.notifyParent);
+  NotifTile(this.notif, this.user,this.notifierPosts,this.notifierNotifs);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        ApiNotifHelper().updateNotif(notif.id);
-        notifyParent();
+      onTap: () async{
+        ApiNotifHelper().updateNotif(notif.id).then((updatedNotif) => {
+          notify(updatedNotif)
+        });
         if (notif.type == 'follow' ) {
           Navigator.push(context,
               MaterialPageRoute(builder: (BuildContext build) {
-            return UserController(user);
+            return UserController(user,this.notifierPosts);
           }));
         } else {
           Future<Post> post = ApiPostHelper().getPostById(notif.idRef);
           post.then((value) => {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (BuildContext ctx) {
-                  return DetailPost(value, me,null);
+                  return DetailPost(value, me,this.notifierPosts);
                 }))
               });
         }
@@ -75,5 +77,10 @@ class NotifTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  notify(Notif notif){
+    this.notifierNotifs.value.firstWhere((element) => element.id==notif.id).seen=true;
+    notifierNotifs.notifyListeners();
   }
 }

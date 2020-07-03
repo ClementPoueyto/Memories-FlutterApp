@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:memories/models/comment.dart';
 import 'package:memories/models/post.dart';
-import 'package:memories/models/user.dart';
 import 'package:memories/util/alert_helper.dart';
 import 'package:memories/view/my_material.dart';
 
@@ -161,7 +160,6 @@ class ApiPostHelper {
         list.removeWhere((element) => element.id == id);
         list.add(Post(jsonDecode(result.body)));
         postController.add(list);
-        print(jsonDecode(result.body));
         return Post(jsonDecode(result.body));
       }
     } catch (error) {
@@ -204,7 +202,7 @@ class ApiPostHelper {
 
   ///Incrémente le compteur de like d'un post
   ///@required Token
-  Future likePost(String idPost) async {
+  Future<Post> likePost(String idPost) async {
     String errorMessage;
     try {
       final result = (await http.put(
@@ -216,7 +214,7 @@ class ApiPostHelper {
         },
       ));
 
-      return jsonDecode(result.body);
+      return Post(jsonDecode(result.body));
     } catch (error) {
       errorMessage = error.toString();
       print("errror like post : " + errorMessage);
@@ -238,13 +236,8 @@ class ApiPostHelper {
             HttpHeaders.authorizationHeader: clientToken
           },
           body: jsonEncode(map)));
-      List<Post> list = myListPosts;
       Comment commentToAdd = Comment(jsonDecode(result.body));
-      list
-          .firstWhere((element) => element.id == idPost)
-          .comments
-          .add(commentToAdd);
-      postController.add(list);
+
       return commentToAdd;
     } catch (error) {
       errorMessage = error.toString();

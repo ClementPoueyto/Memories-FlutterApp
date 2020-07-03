@@ -21,9 +21,10 @@ import 'package:permission_handler/permission_handler.dart';
 class ProfilePostsPage extends StatefulWidget {
   final bool isme;
   User user;
-  final List<DocumentSnapshot> documents;
   final Map<String, List<Post>> listPosts;
-  ProfilePostsPage(this.isme, this.user, this.documents, this.listPosts);
+  final ValueNotifier<List<Post>> notifierPosts;
+
+  ProfilePostsPage(this.isme, this.user, this.listPosts,this.notifierPosts);
 
   _ProfilePostsState createState() => _ProfilePostsState();
 }
@@ -111,7 +112,7 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
                   icon: Icon(Icons.airplanemode_active),
                   color: white,
                   function: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileMapPage(widget.listPosts,widget.user)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileMapPage(widget.listPosts,widget.user,widget.notifierPosts)));
                   },
                 ),
                 ),
@@ -163,12 +164,13 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
               delegate: SliverChildListDelegate(
                 [
                   for (Post post in widget.listPosts[element])
-                    ProfilePostTile(post: post, user: widget.user)
+                    ProfilePostTile(post: post, user: widget.user, notifierPosts: widget.notifierPosts,)
                 ],
               ),
             ),
           );
         }
+
       },
     );
     return list;
@@ -178,7 +180,8 @@ class _ProfilePostsState extends State<ProfilePostsPage> {
 
       User updated =await ApiUserHelper().follow(user.uid);
       me=updated;
-    setState(() {
+      widget.notifierPosts.notifyListeners();
+      setState(() {
     });
   }
 

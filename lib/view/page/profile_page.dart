@@ -4,18 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:memories/models/post.dart';
 import 'package:memories/util/api_post_helper.dart';
-import 'package:memories/util/api_user_helper.dart';
 import 'package:memories/view/my_material.dart';
 import 'package:memories/models/user.dart';
-import 'package:memories/util/fire_helper.dart';
 import 'package:memories/view/my_widgets/loadingCenter.dart';
-import 'package:memories/view/page/profile_map_page.dart';
 import 'package:memories/view/page/profile_posts_page.dart';
-import 'package:memories/view/page/profile_tags_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  User user;
-  ProfilePage(this.user);
+  final User user;
+  final ValueNotifier<List<Post>> notifierPosts;
+
+  ProfilePage(this.user,this.notifierPosts);
 
   _ProfileState createState() => _ProfileState();
 }
@@ -31,7 +29,6 @@ class _ProfileState extends State<ProfilePage> {
   ScrollController scrollController;
 
   Map<String, List<Post>> list=Map();
-  List<DocumentSnapshot> documents;
   Future<List<Post>> userPosts;
 
   @override
@@ -71,7 +68,7 @@ class _ProfileState extends State<ProfilePage> {
                       sortPosts(myListPosts);
                       _pages = [
                         ProfilePostsPage(
-                            this._isme, widget.user, documents, this.list),
+                            this._isme, widget.user, this.list,widget.notifierPosts),
                         //ProfileTagsPage(),
 
                       ];
@@ -97,7 +94,7 @@ class _ProfileState extends State<ProfilePage> {
                     if(_isme){
                       _pages = [
                         ProfilePostsPage(
-                            this._isme, widget.user, documents, this.list),
+                            this._isme, widget.user, this.list,widget.notifierPosts),
                         //ProfileTagsPage(),
 
                       ];
@@ -105,13 +102,13 @@ class _ProfileState extends State<ProfilePage> {
                     if(!_isme&&widget.user.isPrivate) {
                       _pages = [
                         ProfilePostsPage(
-                            this._isme, widget.user, documents, this.list),
+                            this._isme, widget.user, this.list,widget.notifierPosts),
                       ];
                     }
                     else{
                       _pages = [
                         ProfilePostsPage(
-                            this._isme, widget.user, documents, this.list),
+                            this._isme, widget.user, this.list,widget.notifierPosts),
                         //ProfileTagsPage(),
 
                       ];
