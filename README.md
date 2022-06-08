@@ -57,11 +57,11 @@ Clement Poueyto - poueyto.clement@gmail.com
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/ClementPoueyto/Memories-FlutterApp?style=for-the-badge
 [contributors-url]: https://github.com/ClementPoueyto/Memories-FlutterApp/graphs/contributors
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/ClementPoueyto/Memories-FlutterApp?style=for-the-badge
 [issues-url]: https://github.com/ClementPoueyto/Memories-FlutterApp/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/ClementPoueyto/Memories-FlutterApp?style=for-the-badge
 [license-url]: https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/cl%C3%A9ment-poueyto-743429180
