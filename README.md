@@ -18,11 +18,19 @@ Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=f
 * [Flutter](https://flutter.dev/)
 * [Firebase](https://firebase.google.com/)
 
+### Backend 
+* repository : [https://github.com/ClementPoueyto/Memories-backend](https://github.com/ClementPoueyto/Memories-backend)
 
+## Screenshots
 
 <p align="center">
   <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-23-30-120_com.mencelt.memories.jpg" width="350" title="screenshot app">
   <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-31-35-007_com.mencelt.memories.jpg" width="350" title="screenshot app">
+</p>
+
+<p align="center">
+  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-33-27-235_com.mencelt.memories.jpg" width="350" title="screenshot app">
+  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-41-09-680_com.mencelt.memories.jpg" width="350" title="screenshot app">
 </p>
 
 ## Boilerplate Features:
@@ -32,16 +40,10 @@ Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=f
 * Home
 * Database
 * Validation
-* Map
+* Map (OSM)
+* Photo upload
+* Post, Comment and Like
 * User Notifications
-
-
-<p align="center">
-  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-33-27-235_com.mencelt.memories.jpg" width="350" title="screenshot app">
-  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-41-09-680_com.mencelt.memories.jpg" width="350" title="screenshot app">
-</p>
-
-
 
 <!-- LICENSE -->
 ## License
