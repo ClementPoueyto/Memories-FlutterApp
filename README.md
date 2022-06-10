@@ -24,10 +24,14 @@ Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=f
 ## Screenshots
 
 <p align="center">
-  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-23-30-120_com.mencelt.memories.jpg" width="350" title="screenshot app">
-  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-31-35-007_com.mencelt.memories.jpg" width="350" title="screenshot app">
+  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-10-00-50-49-386_fr.mencelt.memories.jpg" width="350" title="screenshot app">
+  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-10-00-23-05-562_fr.mencelt.memories.jpg" width="350" title="screenshot app">
+ 
+  </p>
+ <p align="center">
+  <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-34-21-859_com.mencelt.memories.jpg" width="350" title="screenshot app">
+    <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-31-35-007_com.mencelt.memories.jpg" width="350" title="screenshot app">
 </p>
-
 <p align="center">
   <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-33-27-235_com.mencelt.memories.jpg" width="350" title="screenshot app">
   <img src="https://github.com/ClementPoueyto/Memories-FlutterApp/blob/master/images/Screenshot_2020-06-05-14-41-09-680_com.mencelt.memories.jpg" width="350" title="screenshot app">
