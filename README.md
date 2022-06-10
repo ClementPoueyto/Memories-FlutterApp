@@ -16,6 +16,7 @@ Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=f
 ### Built With
 
 * [Flutter](https://flutter.dev/)
+* [Node JS](https://nodejs.org/en/)
 * [Firebase](https://firebase.google.com/)
 
 ### Backend 
@@ -41,9 +42,9 @@ Lien vers le Google Play Store : https://play.google.com/store/apps/details?id=f
 
 * Splash
 * Login
-* Home
+* Pages
 * Database
-* Validation
+* Form Validation
 * Map (OSM)
 * Photo upload
 * Post, Comment and Like
